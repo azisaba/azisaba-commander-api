@@ -12,6 +12,7 @@
     "start": "tsc && cross-env NODE_ENV=development node ./dist/"
   },
   "dependencies": {
+    "cross-env": "^7.0.3",
     "express": "^4.17.3"
   },
   "devDependencies": {

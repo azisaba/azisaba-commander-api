@@ -7,5 +7,5 @@ create table users
     `ip`            varchar(255) not null,
     `last_update`   DATETIME     not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
     constraint users_pk
-        primary key (id)
+        primary key (`id`)
 );

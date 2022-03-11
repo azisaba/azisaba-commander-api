@@ -5,5 +5,5 @@ create table permissions
     `project`   varchar(255) not null,
     `service`   varchar(255) not null,
     constraint permissions_pk
-        primary key (id)
+        primary key (`id`)
 );

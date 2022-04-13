@@ -201,6 +201,23 @@ export const init = async () => {
                 debug('Created logs table')
             }
         })
+
+        //  user_2fa_recovery table
+        await findOne('SHOW TABLES LIKE "users_2fa_recovery"').then(async res => {
+            if (!res) {
+                debug('Creating users_2fa_recovery table')
+                await execute(`create table users_2fa_recovery
+                               (
+                                   \`id\`      int auto_increment,
+                                   \`user_id\` int         not null,
+                                   \`code\`    varchar(20) not null,
+                                   \`used\`    tinyint(1)  not null default 0,
+                                   constraint users_2fa_recovery_pk
+                                       primary key (\`id\`)
+                               )`)
+                debug('Created users_2fa_recovery table')
+            }
+        })
     })
 }
 

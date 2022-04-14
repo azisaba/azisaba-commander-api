@@ -4,7 +4,7 @@ import {SESSION_LENGTH, UNDER_REVIEW_TAG} from "../util/constants";
 import * as crypto from "../util/crypto"
 import {generateSecureRandomString, getIP, putSession, sleep, verify2FAToken} from "../util/util";
 
-// const debug = require('debug')('azisaba-commander-api:route:login')
+const debug = require('debug')('azisaba-commander-api:route:login')
 export const router = express.Router();
 
 
@@ -31,7 +31,8 @@ router.post('/', async (req, res) => {
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  get user
     const user = await sql.findOne('SELECT `id`, `password`, `group` FROM users WHERE `username`=? LIMIT 1', username)
-    if (user) return res.status(400).send({ error : 'invalid_username_or_password' })
+    if (!user) return res.status(400).send({ error : 'invalid_username_or_password' })
+
     //  check if user has already verified
     if (user.group === UNDER_REVIEW_TAG) {
         return res.status(400).send({ error : 'incomplete_user'})
@@ -52,7 +53,7 @@ router.post('/', async (req, res) => {
         await putSession({
             state,
             expires_at: Date.now() + SESSION_LENGTH,
-            user_id: user.user_id,
+            user_id: user.id,
             ip: getIP(req),
             pending: false
         })

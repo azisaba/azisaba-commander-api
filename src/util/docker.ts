@@ -1,5 +1,6 @@
 import Docker from 'dockerode'
 import {config} from './config'
+import {sleep} from "./util";
 const debug = require('debug')('azisaba-commander-api:docker')
 
 const _nameDockerMap = new Map<string, Docker>();
@@ -26,16 +27,22 @@ export const init = async () => {
     //  connection test and insert it
     const insertDocker = async (name: string, docker: Docker): Promise<void> => {
         try {
-            const res = await docker.ping()
-            if (String(res) === "OK") {
-                debug('established connection to %s', name)
-                //  insert
-                _nameDockerMap.set(name, docker)
-            } else {
-                debug('Error: something wrong. name: %s', name)
-            }
+            await Promise.race([sleep(5000), docker.ping()]).then(result => {
+                //  time-out
+                if (!result) {
+                    debug('Error: %s is timed out', name)
+                }
+
+                if (String(result) === "OK") {
+                    debug('established connection to %s', name)
+                    //  insert
+                    _nameDockerMap.set(name, docker)
+                } else {
+                    debug('Error: something wrong. name: %s', name)
+                }
+            })
         } catch (e) {
-            debug('Error: occurred exception during ping pong.')
+            debug('Error: occurred exception during ping pong. name: %s', name)
         }
     }
 

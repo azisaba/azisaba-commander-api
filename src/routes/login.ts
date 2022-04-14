@@ -57,7 +57,7 @@ router.post('/', async (req, res) => {
             pending: false
         })
         //  cookie
-        res.cookie("azisaba-commander-api", state)
+        res.cookie("azisabacommander_session", state)
 
         //  done
         res.status(200).send({

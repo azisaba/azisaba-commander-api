@@ -24,6 +24,7 @@ router.post('/', async (req, res) => {
     if (!req.body || typeof req.body !== 'object') return res.status(400).send({error: 'invalid_params'})
     const username = req.body['username']
     const password = req.body['password']
+
     //  check null, length
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  check if user or ip already exists
@@ -35,7 +36,7 @@ router.post('/', async (req, res) => {
     const user_id = await sql.findOne(
         'INSERT INTO `users` (`username`, `password`, `group`, `ip`) VALUES (?, ?, ?, ?)',
         username,
-        crypto.hash(password),
+        await crypto.hash(password),
         UNDER_REVIEW_TAG,
         getIP(req)
     )   as number

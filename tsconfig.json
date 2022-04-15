@@ -24,5 +24,8 @@
     "baseUrl": "."
   },
   "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts",
+    "./typings/index.d.ts"
+  ]
 }

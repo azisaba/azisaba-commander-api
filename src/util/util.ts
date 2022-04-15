@@ -46,6 +46,11 @@ export const putSession = async (session: Session): Promise<Session> => {
     return sessions[session.state]
 }
 
+/**
+ *
+ * @param state
+ * @param cache
+ */
 export const getSession = async (state: string, cache: boolean = true): Promise<Session | null> => {
     const cached = sessions[state]
     if (!cache || !cached || cached.expires_at < Date.now()) {
@@ -69,12 +74,21 @@ export const getSession = async (state: string, cache: boolean = true): Promise<
     return sessions[state]
 }
 
+/**
+ * delete session
+ * @param state
+ */
 export const deleteSession = async (state: string): Promise<void> => {
     await sql.execute('DELETE FROM `sessions` WHERE `state`=?', state)
     //  remove cache
     delete sessions[state]
 }
 
+/**
+ * approve under review user and issue authorized session
+ * @param state
+ * @return Session | null
+ */
 export const approveSession = async (state: string): Promise<Session | null> => {
     const session = await getSession(state, false)
     if (!session) return null
@@ -88,6 +102,39 @@ export const approveSession = async (state: string): Promise<Session | null> => 
         state
     )
     return await getSession(state, false)
+}
+
+/**
+ * Get session key with request
+ * @param request
+ * @return state
+ */
+export const getSessionKey = (request: express.Request): string | null => {
+    let key: string | null = null
+    if (request.cookies) key = request.cookies['azisabacommander_session']
+    if (!key && request.body) key = request.body['azisabacommander_session']
+    if (!key && request.headers) key = request.headers['x-azisabacommander-session']?.toString() || null
+
+    return key
+}
+
+/**
+ * get session and validate it
+ * Thanks PerfectBoat for provide this code
+ * @param req
+ * @return session | null
+ */
+export const validateAndGetSession = async (req: express.Request): Promise<Session | null> => {
+    const session = getSessionKey(req)
+    if (!session) return null
+    const token = await getSession(session)
+    // reject if:
+    // - no session
+    // - expired session
+    // - pending registration
+    if (!session || !token || token.pending || token.expires_at <= Date.now()) return null
+    if (token.ip !== getIP(req)) return null // reject if ip address does not match
+    return token
 }
 
 export const verify2FAToken = async (userId: number, token: string, notFoundIsFalse = false) : Promise<boolean> => {

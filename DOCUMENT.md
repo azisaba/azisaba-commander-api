@@ -55,7 +55,7 @@ A human-readable message providing more details about the error.
 ## Versioning
 
 The Commander API manage versions to avoid having harmful effect caused by updating. 
-You need to specify a version in url.
+You need to specify a version in url. For instance, if you use version 1.x api, hit an API as following.
 ```http request
 GET https://api.commander.net/v1/me
 ```
@@ -66,6 +66,7 @@ GET https://api.commander.net/v1/me
   - [Login]()
   - [Logout]()
   - [Register a user]()
+  - [Verify an account]()
   - [Get own profile]()
   - [Verify two-factor]()
   - [Enable two-factor]()
@@ -101,10 +102,122 @@ GET https://api.commander.net/v1/me
   - [Get user profile log]()
 
 ## Account
+
 **The Account API enables to login, logout, signup, 2fa, get profile.**
+
+***
 ### Login
 
-### User
-### Permission
-### Docker Container
-### Logging
+Login to account.
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/v1/login
+```
+
+#### Body
+
+***
+***username*** string  
+username. API supports only ASCII.
+***
+***password*** string  
+password. its length has to be longer than 7. and supports only ASCII too.   
+
+#### Response
+
+Status: 200
+```json
+{
+  "state": "2dd6f96231e80969dc4d1adcd3f4de1c0a9d9db409037d",
+  "message": "logged-in"
+}
+```
+
+***
+### Logout
+
+Logout from account
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/logout
+```
+
+#### Parameters
+
+***
+***state*** string  
+session id
+
+#### Response
+
+Status: 200  
+```json
+{
+  "message": "logged-out"
+}
+```
+
+***
+### Register a user
+
+Register a user
+
+#### Endpoint
+
+```http request
+POST https://api.command.net/register
+```
+
+#### Body
+
+***
+***username*** string  
+username. API supports only ASCII.
+***
+***password*** string  
+password. its length has to be longer than 7. and supports only ASCII too.
+
+#### Response
+
+Status: 200
+```json
+{
+  "message": "ok"
+}
+```  
+Status: 400
+```json
+{
+  "message": "invalid_params"
+}
+```
+```json
+{
+  "message": "invalid_username_or_password"
+}
+```
+```json
+{
+  "message": "dupe_user"
+}
+```  
+Status: 408
+```json
+{
+  "message": "timed_out"
+}
+```
+
+***
+### Verify an account
+
+
+***
+## Users
+## Permissions
+## Docker Containers
+## Logs

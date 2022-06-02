@@ -19,7 +19,29 @@ declare type Session = {
     expires_at: number
     user_id: number
     ip: string
-    pending: boolean
+    pending: int
+}
+
+/**
+ * Session status
+ */
+declare const SessionStatus = {
+    AUTHORIZED: 0,
+    PENDING: -1,
+    UNDER_REVIEW: -2,
+    WAIT_2FA: -3
+}
+
+/**
+ * User Type
+ * id: user id
+ * username: username
+ * group: group name
+ */
+declare type User = {
+    id: number
+    username: string
+    group: string
 }
 
 /**

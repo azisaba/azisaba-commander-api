@@ -1,10 +1,17 @@
 import express from "express";
-import * as sql from '../util/sql'
-import {approveSession, generateSecureRandomString, getIP, getSession, putSession, sleep} from '../util/util'
-import * as crypto from "../util/crypto"
-import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH} from "../util/constants";
+import * as sql from '../../util/sql'
+import {
+    verifyUnfinishedSession,
+    generateSecureRandomString,
+    getIP,
+    getSession,
+    putSession,
+    sleep
+} from '../../util/util'
+import * as crypto from "../../util/crypto"
+import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH} from "../../util/constants";
 
-const debug = require('debug')('azisaba-commander-api:route:register')
+const debug = require('debug')('azisaba-commander-api:route:v1:register')
 export const router = express.Router();
 
 /**
@@ -50,7 +57,7 @@ router.post('/', async (req, res) => {
             expires_at: Date.now() + UNDER_REVIEW_SESSION_LENGTH,
             user_id: user_id,
             ip: getIP(req),
-            pending: true
+            pending: SessionStatus.UNDER_REVIEW
         })
         const url = `${process.env.APP_URL}/register?state=${state}`
         debug(`New user requested review. user:${username} url:${url}`)
@@ -60,7 +67,7 @@ router.post('/', async (req, res) => {
 })
 
 /**
- * Approve session
+ * verify an account
  *
  * Request:
  * - id: string
@@ -71,7 +78,7 @@ router.post('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     const session = await getSession(String(req.params.id))
-    if (!session || !session.pending) return res.status(403).send({ error: 'forbidden' })
+    if (!session || session.pending !== SessionStatus.UNDER_REVIEW) return res.status(403).send({ error: 'forbidden' })
     //  check group
     const user = await sql.findOne('SELECT `group` FROM `users` WHERE `id`=?', session.user_id)
     if (!user) return res.status(400).send({ error : 'forbidden' })
@@ -88,7 +95,7 @@ router.get('/:id', async (req, res) => {
     )
     if (!result) return res.status(404).send( { error: 'not_found' })
     //  session
-    const approved = await approveSession(session.state)
+    const approved = await verifyUnfinishedSession(session.state)
     if (!approved) return res.status(404).send({ error: 'not_found' })
     if (approved.ip === '') return res.status(404).send({ error: 'not_found' })
     return res.status(200).send({

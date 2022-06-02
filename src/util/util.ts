@@ -2,6 +2,7 @@ import express from "express"
 import crypto from 'crypto'
 import * as sql from "./sql";
 import {verifyToken} from "./totp";
+import {GROUP_ADMIN} from "./constants";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -61,7 +62,7 @@ export const getSession = async (state: string, cache: boolean = true): Promise<
                 state,
                 expires_at: Date.now() + 1000 * 60 * 60,
                 ip: '',
-                pending: true,
+                pending: SessionStatus.PENDING,
                 user_id: 0,
             }
         } else {
@@ -85,20 +86,20 @@ export const deleteSession = async (state: string): Promise<void> => {
 }
 
 /**
- * approve under review user and issue authorized session
+ * verify new user that need to review by admin
  * @param state
  * @return Session | null
  */
-export const approveSession = async (state: string): Promise<Session | null> => {
+export const verifyUnfinishedSession = async (state: string): Promise<Session | null> => {
     const session = await getSession(state, false)
     if (!session) return null
     //  if session had been approved
-    if (!session.pending) return session
+    if (session.pending !== SessionStatus.UNDER_REVIEW) return session
 
     //  update session
     await sql.query(
         'UPDATE `sessions` SET `pending`=? WHERE `state`=?',
-        false,
+        SessionStatus.AUTHORIZED,
         state
     )
     return await getSession(state, false)
@@ -137,6 +138,12 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     return token
 }
 
+/**
+ * verify 2fa token
+ * @param userId
+ * @param token
+ * @param notFoundIsFalse if it is true, return false when could not find secret.
+ */
 export const verify2FAToken = async (userId: number, token: string, notFoundIsFalse = false) : Promise<boolean> => {
     const secret = await sql.findOne('SELECT `secret_key` FROM `users_2fa` WHERE `user_id`=?', userId)
     if (!secret) return !notFoundIsFalse
@@ -158,3 +165,36 @@ export const verify2FAToken = async (userId: number, token: string, notFoundIsFa
 
     return true
 }
+
+/**
+ * Get all user profile
+ * @return Array<User>
+ */
+export const getAllUser = async (): Promise<Array<User>> => {
+    return await sql.findAll('SELECT `id`, `username`, `group` FROM `users`')
+}
+
+/**
+ * Get user profile from id
+ * @param id
+ * @return User
+ */
+export const getUser = async (id: number): Promise<User | null> => {
+    return await sql.findOne('SELECT `id`, `username`, `group` FROM `users` WHERE `id`=?', id)
+}
+
+/**
+ *  check if user is admin group
+ *  @param id
+ *  @return boolean
+ */
+export const isAdmin = async (id: number): Promise<boolean> => {
+    const user = await getUser(id)
+    return !(!user || user.group !== GROUP_ADMIN);
+}
+
+/*
+export const getUserPermission = async (id: number): Promise<Array<Permission>> => {
+    return await sql
+}
+*/

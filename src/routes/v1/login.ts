@@ -1,13 +1,20 @@
 import express from "express";
-import * as sql from "../util/sql";
-import {SESSION_LENGTH, UNDER_REVIEW_TAG} from "../util/constants";
-import * as crypto from "../util/crypto"
-import {generateSecureRandomString, getIP, putSession, sleep, verify2FAToken} from "../util/util";
+import * as sql from "../../util/sql";
+import {SESSION_LENGTH, UNDER_REVIEW_TAG} from "../../util/constants";
+import * as crypto from "../../util/crypto"
+import {
+    generateSecureRandomString,
+    getIP,
+    putSession,
+    sleep,
+    verify2FAToken
+} from "../../util/util";
 
-const debug = require('debug')('azisaba-commander-api:route:login')
+const debug = require('debug')('azisaba-commander-api:route:v1:login')
 export const router = express.Router();
 
 
+//  todo disable 2fa
 /**
  * Login
  *
@@ -55,14 +62,14 @@ router.post('/', async (req, res) => {
             expires_at: Date.now() + SESSION_LENGTH,
             user_id: user.id,
             ip: getIP(req),
-            pending: false
+            pending: SessionStatus.AUTHORIZED
         })
         //  cookie
         res.cookie("azisabacommander_session", state)
 
         //  done
         res.status(200).send({
-            state,
+            state: state,
             message: 'logged_in'
         })
     });

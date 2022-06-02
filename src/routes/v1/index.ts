@@ -11,7 +11,6 @@ router.use('/login', loginRouter)
 router.use('/logout', logoutRouter)
 router.use('/me', meRouter)
 
-
 router.get('/', (req, res) => {
     res.send('Server is Online!');
 })

@@ -1,7 +1,7 @@
 import express from "express";
-import {deleteSession, getSessionKey} from "../util/util";
+import {deleteSession, getSessionKey} from "../../util/util";
 
-// const debug = require('debug')('azisaba-commander-api:route:logout')
+// const debug = require('debug')('azisaba-commander-api:route:v1:logout')
 export const router = express.Router();
 
 

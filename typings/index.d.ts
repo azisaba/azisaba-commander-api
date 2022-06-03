@@ -92,3 +92,12 @@ declare type ContainerStatus = {
     memory_stats: object
     cpu_stats: object
 }
+
+/**
+ * Type includes 2fa url and recovery keys
+ */
+declare type TwoFAContent = {
+    id: number
+    url: string
+    recovery: string[]
+}

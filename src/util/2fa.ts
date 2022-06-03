@@ -10,7 +10,7 @@ import {generateSecureRandomString} from "./util";
  */
 export const register = async (userId: number): Promise<TwoFAContent | null> => {
     //  check if user has already registered
-    if ( await sql.findOne("SELECT `id` FROM `users_2fa` WHERE `user_id`", userId)) {
+    if ( await isRegistered(userId)) {
         return null
     }
 

@@ -1,4 +1,7 @@
 import express from "express";
+import {deleteSession, putSession, validateAndGetSession} from "../../util/util";
+import * as twoFA from "../../util/2fa";
+
 const debug = require('debug')('azisaba-commander-api:route:v1:2fa')
 export const router = express.Router();
 
@@ -6,7 +9,6 @@ export const router = express.Router();
  * Verify a 2fa
  *
  * Body:
- * - state: string
  * - code: 2fa code
  *
  * Response:
@@ -14,14 +16,37 @@ export const router = express.Router();
  * - 4xx: failed
  */
 router.get('/', async (req, res) => {
+    let session = await validateAndGetSession(req)
+    if (!session) return res.status(401).send({ error : "unauthorized" })
 
+    //  check if this session need a 2fa
+    if (session.pending !== SessionStatus.PENDING) {
+        return res.status(403).send({ error : "forbidden" })
+    }
+
+    //  check parameter
+    if (!req.body || !req.body['code']) return res.status(400).send({ error : "invalid_param" })
+    const code = req.body['code']
+
+    //  verify
+    if (!await twoFA.verify(session.user_id, code)) {
+        return res.status(400).send({ error : "invalid_2fa_code"})
+    }
+    //  update session
+    await deleteSession(session.state)
+    await putSession({
+        ...session,
+        pending: SessionStatus.AUTHORIZED
+    })
+
+    return res.status(200).send({
+        message : "authorized",
+        state: session.state
+    })
 })
 
 /**
  * Register a 2fa
- *
- * Body:
- * - state: string
  *
  * Response:
  * - 200: success
@@ -32,14 +57,26 @@ router.get('/', async (req, res) => {
  * - 4xx: failed
  */
 router.post('/', async (req, res) => {
+    const session = await validateAndGetSession(req)
+    if (!session) return res.status(401).send({ error : "unauthorized" })
 
+    //  enable 2fa
+    const content = await twoFA.register(session.user_id)
+    if (!content) {
+        //  return 403 if user have registered before
+        return res.status(403).send({ error : "forbidden" })
+    }
+
+    return res.status(200).send({
+        url : content.url,
+        recoveryCodes: content.recovery
+    })
 })
 
 /**
  * Delete 2fa setting. need 2fa code or recovery code.
  *
  * Body:
- * - state: string
  * - code: string
  *
  * Response:
@@ -47,5 +84,21 @@ router.post('/', async (req, res) => {
  * - 4xx: failed
  */
 router.delete('/', async (req, res) => {
+    const session = await validateAndGetSession(req)
+    if (!session) return res.status(401).send({ error : "unauthorized" })
+    //  check parameter
+    if (!req.body || !req.body['code']) return res.status(400).send({ error : "invalid_param" })
+    const code = req.body['code']
 
+    //  return 403 if user is not registered
+    if (!await twoFA.isRegistered(session.user_id)) {
+        return res.status(403).send({ error : "forbidden" })
+    }
+
+    //  delete
+    if (!await twoFA.disable(session.user_id, code)) {
+        return res.status(400).send({ error : "invalid_2fa_code" })
+    }
+
+    return res.status(200).send({ message: "success" })
 })

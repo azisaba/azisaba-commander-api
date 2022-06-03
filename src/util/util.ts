@@ -47,7 +47,7 @@ export const putSession = async (session: Session): Promise<Session> => {
 }
 
 /**
- *
+ * Get session
  * @param state
  * @param cache
  */
@@ -96,11 +96,12 @@ export const verifyUnfinishedSession = async (state: string): Promise<Session | 
     if (session.pending !== SessionStatus.UNDER_REVIEW) return session
 
     //  update session
-    await sql.query(
-        'UPDATE `sessions` SET `pending`=? WHERE `state`=?',
-        SessionStatus.AUTHORIZED,
-        state
-    )
+    await deleteSession(state)
+    await putSession({
+        ...session,
+        pending: SessionStatus.AUTHORIZED
+    })
+
     return await getSession(state, false)
 }
 
@@ -137,6 +138,17 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     return token
 }
 
+/**
+ * This function protects system from crash
+ * @param func
+ */
+export const safe = (func: (req: express.Request, res: express.Response, next: express.NextFunction) => void | Promise<void>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        await func(req, res, next)
+    } catch (e) {
+        next(e)
+    }
+}
 
 /**
  * Get all user profile

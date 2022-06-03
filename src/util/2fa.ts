@@ -84,7 +84,7 @@ export const verify = async (userId: number, code: string, returnTrueIfSecretNot
     if (!secret) return returnTrueIfSecretNotFond
 
     //  if token is recovery code
-    if (code.length == 5) {
+    if (code.length === 5) {
         const recoveryId = await sql.findOne(
             "SELECT `id`, `used` FROM `users_2fa_recovery` WHERE `user_id` = ? AND `code` = ? AND `used` = 0",
             userId,

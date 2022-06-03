@@ -20,7 +20,6 @@ export const router = express.Router();
  * Request:
  * - username: string
  * - password: string
- * - 2fa_token: number *optional
  *
  * Response:
  * - state: string
@@ -47,10 +46,6 @@ router.post('/', async (req, res) => {
     if (!await crypto.compare(password, user.password) ){
         return res.status(400).send({ error : 'invalid_username_or_password' })
     }
-    //  2fa
-    if (!await twoFA.verify(user.id, req.body["2fa_token"])) {
-        return res.status(400).send({ error : 'incorrect_2fa_token' })
-    }
 
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
@@ -61,7 +56,7 @@ router.post('/', async (req, res) => {
             expires_at: Date.now() + SESSION_LENGTH,
             user_id: user.id,
             ip: getIP(req),
-            pending: SessionStatus.AUTHORIZED
+            pending: await twoFA.isRegistered(user.user_id) ? SessionStatus.WAIT_2FA : SessionStatus.AUTHORIZED
         })
         //  cookie
         res.cookie("azisabacommander_session", state)

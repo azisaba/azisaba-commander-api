@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
     if (!session) return res.status(401).send({ error : "unauthorized" })
 
     //  check if this session need a 2fa
-    if (session.pending !== SessionStatus.PENDING) {
+    if (session.pending !== SessionStatus.WAIT_2FA) {
         return res.status(403).send({ error : "forbidden" })
     }
 

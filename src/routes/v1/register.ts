@@ -95,11 +95,11 @@ router.get('/:id', async (req, res) => {
     )
     if (!result) return res.status(404).send( { error: 'not_found' })
     //  session
-    const approved = await verifyUnfinishedSession(session.state)
-    if (!approved) return res.status(404).send({ error: 'not_found' })
-    if (approved.ip === '') return res.status(404).send({ error: 'not_found' })
+    const verified = await verifyUnfinishedSession(session.state)
+    if (!verified) return res.status(404).send({ error: 'not_found' })
+    if (verified.ip === '') return res.status(404).send({ error: 'not_found' })
     return res.status(200).send({
-        id: approved.state,
+        id: verified.state,
         user_id: session.user_id
     })
 })

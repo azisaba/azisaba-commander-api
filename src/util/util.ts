@@ -54,7 +54,7 @@ export const putSession = async (session: Session): Promise<Session> => {
 export const getSession = async (state: string, cache: boolean = true): Promise<Session | null> => {
     const cached = sessions[state]
     if (!cache || !cached || cached.expires_at < Date.now()) {
-        if (cached?.expires_at > Date.now() && cached?.ip === '' && cached?.pending && cached?.user_id === 0) return null
+        if (cached?.expires_at > Date.now() && cached?.ip === '' && cached?.pending === SessionStatus.PENDING && cached?.user_id === 0) return null
         const session = await sql.findOne('SELECT * FROM `sessions` WHERE `state`=?', state)
         if (!session) {
             sessions[state] = {
@@ -132,7 +132,7 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     // - no session
     // - expired session
     // - pending registration
-    if (!session || !token || token.pending || token.expires_at <= Date.now()) return null
+    if (!session || !token || token.pending !== SessionStatus.AUTHORIZED || token.expires_at <= Date.now()) return null
     if (token.ip !== getIP(req)) return null // reject if ip address does not match
     return token
 }

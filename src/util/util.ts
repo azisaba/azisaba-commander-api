@@ -1,7 +1,6 @@
 import express from "express"
 import crypto from 'crypto'
 import * as sql from "./sql";
-import {verifyToken} from "./totp";
 import {GROUP_ADMIN} from "./constants";
 
 //  session cache
@@ -138,33 +137,6 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     return token
 }
 
-/**
- * verify 2fa token
- * @param userId
- * @param token
- * @param notFoundIsFalse if it is true, return false when could not find secret.
- */
-export const verify2FAToken = async (userId: number, token: string, notFoundIsFalse = false) : Promise<boolean> => {
-    const secret = await sql.findOne('SELECT `secret_key` FROM `users_2fa` WHERE `user_id`=?', userId)
-    if (!secret) return !notFoundIsFalse
-    //  length
-    if (token.length < 6) return false
-    //  verify
-    let result: boolean
-    try {
-        result = verifyToken(secret, token)
-    } catch (e) {
-        result = false
-    }
-
-    if (!result) {
-        //  recovery
-        const recovery = await sql.findOne('SELECT * FROM `users_2fa_recovery` WHERE  `user_id`=? AND `code`=? AND `used`=0', userId, token)
-        if (!recovery) return false
-    }
-
-    return true
-}
 
 /**
  * Get all user profile

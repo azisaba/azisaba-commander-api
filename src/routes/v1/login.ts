@@ -6,15 +6,14 @@ import {
     generateSecureRandomString,
     getIP,
     putSession,
-    sleep,
-    verify2FAToken
+    sleep
 } from "../../util/util";
+import * as twoFA from "../../util/2fa"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:login')
 export const router = express.Router();
 
 
-//  todo disable 2fa
 /**
  * Login
  *
@@ -49,7 +48,7 @@ router.post('/', async (req, res) => {
         return res.status(400).send({ error : 'invalid_username_or_password' })
     }
     //  2fa
-    if (!await verify2FAToken(user.id, req.body['2fa_token'])) {
+    if (!await twoFA.verify(user.id, req.body["2fa_token"])) {
         return res.status(400).send({ error : 'incorrect_2fa_token' })
     }
 

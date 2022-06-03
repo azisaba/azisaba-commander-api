@@ -5,13 +5,12 @@ import {generateSecureRandomString} from "./util";
 /**
  * register 2fa
  *
- * @param user
+ * @param userId
  * @return TwoFAContent
  */
-const register = async (user: User): Promise<TwoFAContent | null> => {
-    if (!user.id) return null
+export const register = async (userId: number): Promise<TwoFAContent | null> => {
     //  check if user has already registered
-    if ( await sql.findOne("SELECT `id` FROM `users_2fa` WHERE `user_id`", user.id)) {
+    if ( await sql.findOne("SELECT `id` FROM `users_2fa` WHERE `user_id`", userId)) {
         return null
     }
 
@@ -26,7 +25,7 @@ const register = async (user: User): Promise<TwoFAContent | null> => {
     //  save secret formatted base64
     await sql.execute(
         "INSERT INTO `users_2fa` (`user_id`, `secret_key`) VALUES (? ,?)",
-        user.id,
+        userId,
         secret.base32
     );
 
@@ -41,15 +40,15 @@ const register = async (user: User): Promise<TwoFAContent | null> => {
 
     await sql.execute(
         "INSERT INTO `users_2fa_recovery` (`user_id`, `code`) VALUES (?, ?), (?, ?), (?, ?), (?, ?), (?, ?)",
-        user.id,
+        userId,
         recoveryCodes[0],
-        user.id,
+        userId,
         recoveryCodes[1],
-        user.id,
+        userId,
         recoveryCodes[2],
-        user.id,
+        userId,
         recoveryCodes[3],
-        user.id,
+        userId,
         recoveryCodes[4],
     )
 
@@ -61,7 +60,7 @@ const register = async (user: User): Promise<TwoFAContent | null> => {
     });
 
     return {
-        id: user.id,
+        id: userId,
         url: url,
         recovery: recoveryCodes
     }
@@ -70,18 +69,17 @@ const register = async (user: User): Promise<TwoFAContent | null> => {
 /**
  * verify 2fa
  *
- * @param user
+ * @param userId
  * @param code
  * @param returnTrueIfSecretNotFond
  * @return Boolean
  */
-const verify = async (user: User, code: string, returnTrueIfSecretNotFond = false): Promise<Boolean> => {
-    if (!user.id) return false
+export const verify = async (userId: number, code: string, returnTrueIfSecretNotFond = false): Promise<Boolean> => {
 
     //  get secret from db
     const secret = await sql.findOne(
         "SELECT `secret` FROM `users_2fa` WHERE `user_id` = ?",
-        user.id
+        userId
     )
     if (!secret) return returnTrueIfSecretNotFond
 
@@ -89,7 +87,7 @@ const verify = async (user: User, code: string, returnTrueIfSecretNotFond = fals
     if (code.length == 5) {
         const recoveryId = await sql.findOne(
             "SELECT `id`, `used` FROM `users_2fa_recovery` WHERE `user_id` = ? AND `code` = ? AND `used` = 0",
-            user.id,
+            userId,
             code,
         )
         if (!recoveryId) return false
@@ -110,22 +108,22 @@ const verify = async (user: User, code: string, returnTrueIfSecretNotFond = fals
 /**
  * disable 2fa. it needs to verify
  *
- * @param user
+ * @param userId
  * @param code
  * @return Boolean
  */
-const disable = async (user: User, code: string): Promise<Boolean> => {
-    if (!await verify(user, code))  return false
+export const disable = async (userId: number, code: string): Promise<Boolean> => {
+    if (!await verify(userId, code))  return false
 
     //  delete secret
     await sql.execute(
         "DELETE FROM `users_2fa` WHERE `user_id` = ?",
-        user.id
+        userId
     )
     //  delete recovery code
     await sql.execute(
         "DELETE FROM `users_2fa_recovery` WHERE `user_id` = ?",
-        user.id
+        userId
     )
 
     return true
@@ -134,13 +132,12 @@ const disable = async (user: User, code: string): Promise<Boolean> => {
 /**
  * check if 2fa has already been registered
  *
- * @param user
+ * @param userId
  * @return Boolean
  */
-const isRegistered = async (user: User): Promise<Boolean> => {
-    if (!user.id) return false
+export const isRegistered = async (userId: number): Promise<Boolean> => {
     return await sql.findOne(
         "SELECT `id` FROM `users_2fa` WHERE `user_id` = ?",
-        user.id
+        userId
     )
 }

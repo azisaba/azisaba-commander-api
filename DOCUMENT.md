@@ -77,7 +77,6 @@ GET https://api.commander.net/v1/me
   - [Get a user profile]()
   - [Delete a user]()
   - [Get a list of permission(user has)]()
-  - [Get a permission information]()
   - [Add a permission]()
   - [Remove a permission]()
   - [Get a group]()
@@ -118,19 +117,17 @@ POST https://api.commander.net/v1/login
 
 #### Body
 
-***
-***username*** string  
-username. API supports only ASCII.
-***
-***password*** string  
-password. its length has to be longer than 7. and supports only ASCII too.   
+| name     | type   | description                                               |
+|----------|--------|-----------------------------------------------------------|
+| username | string | API supports only ASCII                                   |
+| password | string | its length must be longer than 7. and supports only ASCII |
 
 #### Response
 
 Status: 200
 ```json
 {
-  "state": "2dd6f96231e80969dc4d1adcd3f4de1c0a9d9db409037d",
+  "state": "<SESSION_STATE>",
   "message": "logged-in"
 }
 ```
@@ -145,12 +142,6 @@ Logout from account
 ```http request
 POST https://api.commander.net/logout
 ```
-
-#### Parameters
-
-***
-***state*** string  
-session id
 
 #### Response
 
@@ -174,12 +165,10 @@ POST https://api.command.net/register
 
 #### Body
 
-***
-***username*** string  
-username. API supports only ASCII.
-***
-***password*** string  
-password. its length has to be longer than 7. and supports only ASCII too.
+| name     | type   | description                                               |
+|----------|--------|-----------------------------------------------------------|
+| username | string | API supports only ASCII                                   |
+| password | string | its length must be longer than 7. and supports only ASCII |
 
 #### Response
 
@@ -215,6 +204,141 @@ Status: 408
 ***
 ### Verify an account
 
+By verifying, the account will be activated.
+
+#### Endpoint
+
+```http request
+POST https://api.command.net/register/{state}
+```
+
+#### Parameters
+
+| name  | type   | description |
+|-------|--------|-------------|
+| state | string | session id  |
+
+#### Response
+
+***
+### Get own profile
+
+Get user profile including id, group, etc.
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/me
+```
+
+#### Response
+
+Status: 200
+```json
+{
+  "state": "<SESSION_STATE>" 
+}
+```
+Status: 400
+```json
+{
+  "error": "dupe_user" 
+}
+```
+Status: 404
+```json
+{
+  "error": "not_found" 
+}
+```
+
+***
+### Verify two-factor
+
+Verifying two-factor for login, disable two-factor, etc.
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/2fa
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| code | number | 2FA code    |
+
+#### Response
+
+Status: 200
+```json
+{
+  "message": "authorized",
+  "state": "<SESSION_STATE>"
+}
+```
+Status: 400
+```json
+{
+  "error": "invalid_2fa_code"
+}
+```
+
+***
+### Enable two-factor
+
+Set up two-factor authorization. Return oauth url and recovery codes. 
+We recommend to convert url into QR-code.   
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/2fa
+```
+
+#### Response
+
+Status: 200
+```json
+{
+  "url": "<OAUTH_URL>",
+  "recoveryCodes": ["<RECOVERY_1>","<RECOVERY_2>","..."]
+}
+```
+
+***
+### Disable two-factor
+
+Disabling two-factor need to authorize by two-factor code or recovery code.
+
+#### Endpoint
+
+```http request
+DELETE https://api.commander.net/2fa
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| code | number | 2FA code    |
+
+#### Response
+
+Status: 200
+```json
+{
+  "message": "success"
+}
+```
+Status: 400
+
+```json
+{
+  "error": "invalid_2fa_code"
+}
+```
 
 ***
 ## Users

@@ -73,8 +73,7 @@ router.post('/', async (req, res) => {
  * - id: string
  *
  * Response:
- * - id: string
- * - user_id: string
+ * - state: string
  */
 router.get('/:id', async (req, res) => {
     const session = await getSession(String(req.params.id))
@@ -99,7 +98,6 @@ router.get('/:id', async (req, res) => {
     if (!verified) return res.status(404).send({ error: 'not_found' })
     if (verified.ip === '') return res.status(404).send({ error: 'not_found' })
     return res.status(200).send({
-        id: verified.state,
-        user_id: session.user_id
+        state: verified.state
     })
 })

@@ -139,18 +139,6 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
 }
 
 /**
- * This function protects system from crash
- * @param func
- */
-export const safe = (func: (req: express.Request, res: express.Response, next: express.NextFunction) => void | Promise<void>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    try {
-        await func(req, res, next)
-    } catch (e) {
-        next(e)
-    }
-}
-
-/**
  * Get all user profile
  * @return Array<User>
  */

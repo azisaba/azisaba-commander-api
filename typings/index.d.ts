@@ -1,18 +1,18 @@
 /**
- * SessionTable Type
- * Array<state, Session>
+ *  SessionTable Type
+ *  Array<state, Session>
  */
 declare type SessionTable = {
     [state: string]: Session
 }
 
 /**
- * Session Type
- * state: string
- * expires_at: number
- * user_id: number
- * ip: string
- * pending: boolean
+ *  Session Type
+ *  state: string
+ *  expires_at: number
+ *  user_id: number
+ *  ip: string
+ *  pending: boolean
  */
 declare type Session = {
     state: string
@@ -23,7 +23,7 @@ declare type Session = {
 }
 
 /**
- * Session status
+ *  Session status
  */
 declare const SessionStatus = {
     AUTHORIZED: 0,
@@ -33,10 +33,10 @@ declare const SessionStatus = {
 }
 
 /**
- * User Type
- * id: user id
- * username: username
- * group: group name
+ *  User Type
+ *  id: user id
+ *  username: username
+ *  group: group name
  */
 declare type User = {
     id: number
@@ -45,32 +45,28 @@ declare type User = {
 }
 
 /**
- * Permission Type
- * id: permission id
- * name: permission name
- * content: list of permission content
+ *  Permission Type
+ *  id: permission id
+ *  name: permission name
+ *  content:
+ *  - project: docker-compose project
+ *  - service: docker-compose service
  */
 declare type Permission = {
     id: number
     name: string
-    content: PermissionContent[]
+    content: [
+        {
+            project: string
+            service: string
+        }
+    ]
 }
 
 /**
- * PermissionContent Type
- * project: docker-compose project
- * service: docker-compose service
- */
-declare type PermissionContent = {
-    project: string
-    service: string
-}
-
-/**
- * Container Type
- * id: docker container id
- * docker_id: docker id
- *
+ *  Container Type
+ *  id: docker container id
+ *  docker_id: docker id
  */
 declare type Container = {
     id: string
@@ -83,8 +79,7 @@ declare type Container = {
 }
 
 /**
- * ContainerStatus Type
- *
+ *  ContainerStatus Type
  */
 declare type ContainerStatus = {
     state: object
@@ -94,7 +89,7 @@ declare type ContainerStatus = {
 }
 
 /**
- * Type includes 2fa url and recovery keys
+ *  Type includes 2fa url and recovery keys
  */
 declare type TwoFAContent = {
     id: number

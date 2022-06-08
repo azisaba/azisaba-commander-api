@@ -48,19 +48,26 @@ declare type User = {
  *  Permission Type
  *  id: permission id
  *  name: permission name
- *  content:
- *  - project: docker-compose project
- *  - service: docker-compose service
+ *  content: PermissionContent[]
  */
 declare type Permission = {
     id: number
     name: string
-    content: [
-        {
-            project: string
-            service: string
-        }
-    ]
+    content: PermissionContent[]
+}
+
+/**
+ *  Permission Content Type
+ *
+ *  Format rule
+ *  project:service|project:service|...
+ *
+ *  project: docker-compose project
+ *  service: docker-compose service
+ */
+declare type PermissionContent = {
+    project: string
+    service: string
 }
 
 /**

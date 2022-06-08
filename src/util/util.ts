@@ -138,33 +138,6 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     return token
 }
 
-/**
- * Get all user profile
- * @return Array<User>
- */
-export const getAllUser = async (): Promise<Array<User>> => {
-    return await sql.findAll('SELECT `id`, `username`, `group` FROM `users`')
-}
-
-/**
- * Get user profile from id
- * @param id
- * @return User
- */
-export const getUser = async (id: number): Promise<User | null> => {
-    return await sql.findOne('SELECT `id`, `username`, `group` FROM `users` WHERE `id`=?', id)
-}
-
-/**
- *  check if user is admin group
- *  @param id
- *  @return boolean
- */
-export const isAdmin = async (id: number): Promise<boolean> => {
-    const user = await getUser(id)
-    return !(!user || user.group !== GROUP_ADMIN);
-}
-
 /*
 export const getUserPermission = async (id: number): Promise<Array<Permission>> => {
     return await sql

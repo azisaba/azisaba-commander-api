@@ -35,9 +35,9 @@ Codes in the 5xx range indicate an error with Commander's servers.
 
 #### Attributes
 
-***
-**message** string  
-A human-readable message providing more details about the error.
+| name    | type   | description                                                      |
+|---------|--------|------------------------------------------------------------------|
+| message | string | A human-readable message providing more details about the error. |
 
 #### HTTP STATUS SUMMARY
 

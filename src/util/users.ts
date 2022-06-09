@@ -34,7 +34,7 @@ export const isAdmin = async (id: number): Promise<boolean> => {
  *  @param userId
  *  @return Array<number>
  */
-export const getAllPermissionId = async (userId: number): Promise<Array<number> | null> => {
+export const getAllUserPermissionId = async (userId: number): Promise<Array<number> | null> => {
     const list = await sql.findAll('SELECT `permission_id` FROM `users_permission` WHERE `user_id`=?', userId)
     if (typeof list !== 'object') return null
     return list.map(r => r.permission_id)
@@ -44,8 +44,8 @@ export const getAllPermissionId = async (userId: number): Promise<Array<number> 
  *  get all permission contents
  *
  */
-export const getAllPermission = async (userId: number): Promise<Array<Permission> | null> => {
-    const ids = await getAllPermissionId(userId)
+export const getAllUserPermission = async (userId: number): Promise<Array<Permission> | null> => {
+    const ids = await getAllUserPermissionId(userId)
     if (!ids) return null
 
     const permissions = new Array<Permission>()

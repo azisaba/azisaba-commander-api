@@ -156,8 +156,7 @@ export const init = async () => {
                                (
                                    \`id\`      int auto_increment,
                                    \`name\`    varchar(255) not null,
-                                   \`project\` varchar(255) not null,
-                                   \`service\` varchar(255) not null,
+                                   \`content\` text not null,
                                    constraint permissions_pk
                                        primary key (\`id\`)
                                )`)

@@ -1,6 +1,7 @@
 import * as sql from "./sql";
 import {GROUP_ADMIN} from "./constants";
 import {getPermission} from "./permission";
+import * as crypto from "./crypto";
 
 /**
  * Get all user profile
@@ -17,6 +18,20 @@ export const getAllUser = async (): Promise<Array<User>> => {
  */
 export const getUser = async (id: number): Promise<User | null> => {
     return await sql.findOne('SELECT `id`, `username`, `group` FROM `users` WHERE `id`=?', id)
+}
+
+/**
+ * change user password
+ * @param id
+ * @param password
+ * @return Boolean
+ */
+export const changePassword = async (id: number, password: string): Promise<void> => {
+    return await sql.execute(
+        "UPDATE `users` SET `password`=? WHERE `id`=?",
+        await crypto.hash(password),
+        id
+    )
 }
 
 /**

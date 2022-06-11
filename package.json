@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": "https://github.com/testusuke/azisaba-commander-api.git",
   "author": "testusuke",
-  "license": "APACHE-2.0",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "build": "tsc",

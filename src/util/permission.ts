@@ -68,6 +68,18 @@ export const createPermission = async (permission: Permission): Promise<number |
     return id
 }
 
+export const updatePermission = async (permission: Permission): Promise<void> => {
+    //  format content
+    const contentStr = formatContent(permission.content)
+
+    return await sql.execute(
+        "UPDATE `permissions` SET `name`=?, `content`=? WHERE `id`=?",
+        permission.name,
+        contentStr,
+        permission.id
+    )
+}
+
 /**
  * Parse permission content
  *

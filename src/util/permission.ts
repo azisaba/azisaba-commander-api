@@ -6,7 +6,7 @@ import * as sql from "./sql"
  * @param id
  * @return Permission
  */
-export const getPermission = async (id: number): Promise<Permission | null> => {
+export const get = async (id: number): Promise<Permission | null> => {
     const p = await sql.findOne(
         "SELECT * FROM `permissions` WHERE `id`=?",
         id
@@ -26,7 +26,7 @@ export const getPermission = async (id: number): Promise<Permission | null> => {
  *
  * @return Array<Permission>
  */
-export const getAllPermission = async (): Promise<Array<Permission> | null> => {
+export const getAll = async (): Promise<Array<Permission> | null> => {
     const p = await sql.findOne(
         "SELECT * FROM `permissions`"
     )
@@ -44,7 +44,7 @@ export const getAllPermission = async (): Promise<Array<Permission> | null> => {
     return permissions
 }
 
-export const deletePermission = async (id: number): Promise<void> => {
+export const remove = async (id: number): Promise<void> => {
     //  delete from sql
     await sql.execute(
         "DELETE FROM `permissions` WHERE `id`=?",
@@ -53,7 +53,7 @@ export const deletePermission = async (id: number): Promise<void> => {
     return
 }
 
-export const createPermission = async (permission: Permission): Promise<number | null> => {
+export const create = async (permission: Permission): Promise<number | null> => {
     //  format content
     const contentStr = formatContent(permission.content)
 
@@ -68,7 +68,7 @@ export const createPermission = async (permission: Permission): Promise<number |
     return id
 }
 
-export const updatePermission = async (permission: Permission): Promise<void> => {
+export const update = async (permission: Permission): Promise<void> => {
     //  format content
     const contentStr = formatContent(permission.content)
 

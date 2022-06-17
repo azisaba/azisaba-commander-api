@@ -342,6 +342,18 @@ Status: 400
 
 ***
 ## Users
+
+***
 ## Permissions
+
+**Permission api**
+
+***
+### Get list of permissions
+
+
+***
 ## Docker Containers
+
+***
 ## Logs

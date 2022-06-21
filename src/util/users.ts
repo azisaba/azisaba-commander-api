@@ -35,6 +35,33 @@ export const changePassword = async (userId: number, password: string): Promise<
 }
 
 /**
+ * delete user
+ * @param userId
+ */
+export const deleteUser = async (userId: number): Promise<void> => {
+    //  users table
+    await sql.execute(
+        "DELETE FROM `users` WHERE `id`=?",
+        userId
+    )
+    //  users_permission table
+    await sql.execute(
+        "DELETE FROM `users_permission` WHERE `id`=?",
+        userId
+    )
+    //  users_2fa table
+    await sql.execute(
+        "DELETE FROM `users_2fa` WHERE `id`=?",
+        userId
+    )
+    //  users_2fa_recovery table
+    await sql.execute(
+        "DELETE FROM `users_2fa_recovery` WHERE `id`=?",
+        userId
+    )
+}
+
+/**
  *  check if user is admin group
  *  @param userId
  *  @return boolean
@@ -57,7 +84,8 @@ export const getAllPermissionId = async (userId: number): Promise<Array<number> 
 
 /**
  *  get all permission contents
- *
+ *  @param userId
+ *  @return Array<Permission> | null
  */
 export const getAllPermission = async (userId: number): Promise<Array<Permission> | null> => {
     const ids = await getAllPermissionId(userId)
@@ -73,6 +101,11 @@ export const getAllPermission = async (userId: number): Promise<Array<Permission
     return permissions
 }
 
+/**
+ * get all permission content
+ * @param userId
+ * @return Array<PermissionContent> | null
+ */
 export const getAllPermissionContents = async (userId: number): Promise<Array<PermissionContent> | null> => {
     const permissions = await getAllPermission(userId)
     if (!permissions) return null
@@ -84,6 +117,12 @@ export const getAllPermissionContents = async (userId: number): Promise<Array<Pe
     return contents
 }
 
+/**
+ * check if user has permission
+ * @param userId
+ * @param permissionContent
+ * @return boolean if user has return true
+ */
 export const hasPermission = async (userId: number, permissionContent: PermissionContent): Promise<Boolean> => {
     const contents = await getAllPermissionContents(userId)
     if (!contents) return false
@@ -94,9 +133,6 @@ export const hasPermission = async (userId: number, permissionContent: Permissio
             return false
         }
         //  service
-        if (content.service !== "*") {
-            return false
-        }
-        //  todo 条件
+        return content.service === "*" || content.service === permissionContent.service
     })
 }

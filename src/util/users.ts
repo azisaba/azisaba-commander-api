@@ -62,6 +62,19 @@ export const deleteUser = async (userId: number): Promise<void> => {
 }
 
 /**
+ * check if user exist
+ * @param userId
+ * @return boolean
+ */
+export const existUser = async (userId: number): Promise<Boolean> => {
+    if (!userId) return false
+    return !await sql.findOne(
+        "SELECT `id` FROM `users` WHERE `id`=?",
+        userId
+    )
+}
+
+/**
  *  check if user is admin group
  *  @param userId
  *  @return boolean
@@ -118,12 +131,55 @@ export const getAllPermissionContents = async (userId: number): Promise<Array<Pe
 }
 
 /**
+ * add permission
+ * @param userId
+ * @param permissionId
+ */
+export const addPermission = async (userId: number, permissionId: number): Promise<void> => {
+    await sql.execute(
+        "INSERT INTO `users_permission` (`user_id`, `permission_id`) VALUES (?, ?)",
+        userId,
+        permissionId
+    )
+}
+
+/**
+ * remove permission
+ * @param userId
+ * @param permissionId
+ */
+export const removePermission = async (userId: number, permissionId: number): Promise<void> => {
+    await sql.execute(
+        "DELETE FROM `users_permission` WHERE `user_id`=? AND `permission_id`=?",
+        userId,
+        permissionId
+    )
+}
+
+/**
  * check if user has permission
+ *
+ * @param userId
+ * @param permissionId
+ * @return boolean
+ */
+export const hasPermission = async (userId: number, permissionId: number) => {
+    if (!userId || !permissionId) return false
+    return !await sql.findOne(
+        "SELECT `id` FROM `users_permission` WHERE `user_id`=? AND `permission_id`=?",
+        userId,
+        permissionId
+    )
+}
+
+/**
+ * check if user has permission content
+ *
  * @param userId
  * @param permissionContent
  * @return boolean if user has return true
  */
-export const hasPermission = async (userId: number, permissionContent: PermissionContent): Promise<Boolean> => {
+export const hasPermissionContent = async (userId: number, permissionContent: PermissionContent): Promise<Boolean> => {
     const contents = await getAllPermissionContents(userId)
     if (!contents) return false
 

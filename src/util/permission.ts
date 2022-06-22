@@ -80,6 +80,14 @@ export const update = async (permission: Permission): Promise<void> => {
     )
 }
 
+export const exist = async (id: number): Promise<boolean> => {
+    if (!id) return false
+    return !await sql.findOne(
+        "SELECT `id` FROM `permissions` WHERE `id`=?",
+        id
+    )
+}
+
 /**
  * Parse permission content
  *

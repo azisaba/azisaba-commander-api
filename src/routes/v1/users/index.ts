@@ -4,6 +4,8 @@ import {router as groupRouter} from "./group"
 import * as userUtil from "../../../util/users"
 import {validateAndGetSession} from "../../../util/util"
 
+const debug = require('debug')('azisaba-commander-api:route:v1:users:index')
+
 export const router = express.Router();
 
 //  User
@@ -88,7 +90,15 @@ router.delete('/:id', async (req, res) => {
 })
 
 //  Permission
-router.use('/:id/permissions', permissionsRouter)
+router.use(
+    '/:id/permissions',
+    (req, res, next) => {
+        // @ts-ignore
+        req.userId = req.params.id
+        next()
+    }
+    ,permissionsRouter
+)
 //  Group
 router.use('/:id/group', groupRouter)
 

@@ -379,10 +379,292 @@ Status: 400
 ***
 ## Users
 
+**The User api enable to access user components**
+
+***
+### Get a list of user
+
+Get all users. it also includes uncompleted user.
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/users
+```
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "message": "ok",
+  "users": [
+    {
+      "id": 0,
+      "username": "hogehoge",
+      "group": "user"
+    },
+    {
+      "id": 1,
+      "username": "fuge_administer",
+      "group": "admin"
+    },
+    ...
+  ]
+}
+```
+
+| name     | type   | description |
+|----------|--------|-------------|
+| id       | number | user id     |
+| username | string | user name   |
+| group    | string | user group  |
+
+***
+### Get a user profile
+
+Get a user profile that matches id
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/users/{id}
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| id   | number | user id     |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "id": 12134,
+  "username": "Dr_Strange",
+  "group": "under_review"
+}
+```
+
+***
+### Delete a user
+
+To delete a user needs admin permission.
+
+#### Endpoint
+
+```http request
+DELETE https://api.commander.net/users/{id}
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| id   | number | user id     |
+
+#### Response
+
+Status: 200
+```json
+{
+  "message": "ok"
+}
+```
+
+***
+### Get a list of permission(user has)
+
+Get all permissions that user has. it requires admin permission.
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/users/{id}/permissions
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| id   | number | user id     |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "message": "ok",
+  "userId": 1234,
+  "permissions": [
+    {
+      "id": 0,
+      "name": "server-1-container",
+      "content": [
+        {
+          "project": "section01",
+          "service": "app"
+        },
+        {
+          "project": "section01",
+          "service": "database"
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}
+```  
+Permission component
+
+| name    | type              | description        |
+|---------|-------------------|--------------------|
+| id      | number            | permission id      |
+| name    | string            | permission name    |
+| content | PermissionContent | permission content |
+
+PermissionContent component
+
+| name    | type   | description         |
+|---------|--------|---------------------|
+| project | string | docker project name |
+| service | string | docker service name |
+
+
+***
+### Add a permission
+
+Add permission to user. it requires admin permission.
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/users/{id}/permissions/{permission_id}
+```
+
+#### Parameters
+
+| name          | type    | description   |
+|---------------|---------|---------------|
+| id            | number  | user id       |
+| permission_id | number  | permission id |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "message": "ok"
+}
+```
+
+***
+### Remove a permission
+
+Remove permission from user. it requires admin permission.
+
+#### Endpoint
+
+```http request
+DELETE https://api.commander.net/users/{id}/permissions/{permission_id}
+```
+
+#### Parameters
+
+| name          | type    | description   |
+|---------------|---------|---------------|
+| id            | number  | user id       |
+| permission_id | number  | permission id |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "message": "ok"
+}
+```
+
+***
+### Get a group
+
+Get a group name that user belong to. it requires admin permission.
+
+#### Endpoint
+
+```http request
+GET https://api.commander.net/users/{id}/group
+```
+
+#### Parameters
+
+| name          | type    | description   |
+|---------------|---------|---------------|
+| id            | number  | user id       |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "group": "admin/user/under_review"
+}
+```
+
+| name  | type   | description |
+|-------|--------|-------------|
+| group | string | group name  |
+
+
+***
+### Set a group
+
+Set a user group. it requires admin permission
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/users/{id}/group
+```
+
+#### Parameters
+
+| name | type   | description |
+|------|--------|-------------|
+| id   | number | user id     |
+
+#### Body
+
+| name  | type   | description |
+|-------|--------|-------------|
+| group | string | group name  |
+
+#### Response
+
+Status: 200
+
+```json
+{
+  "message": "ok"
+}
+```
+
+
 ***
 ## Permissions
 
-**Permission api**
+**The Permission api enable to access Permission components**
+
+
 
 ***
 ### Get list of permissions

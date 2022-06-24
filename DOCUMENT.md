@@ -71,6 +71,7 @@ GET https://api.commander.net/v1/me
   - [Verify two-factor]()
   - [Enable two-factor]()
   - [Disable two-factor]()
+  - [Change password]()
 
 - [Users]()
   - [Get a list of user]()
@@ -337,6 +338,41 @@ Status: 400
 ```json
 {
   "error": "invalid_2fa_code"
+}
+```
+
+***
+### Change password
+
+Change login password.
+
+#### Endpoint
+
+```http request
+POST https://api.commander.net/changepassword
+```
+
+#### Parameters
+
+| name | type   | description      |
+|------|--------|------------------|
+| old  | string | old password     |
+| new  | string | new password     |
+| code | number | 2FA code(option) |
+
+#### Response
+
+Status: 200
+```json
+{
+  "message": "success"
+}
+```
+Status: 400
+
+```json
+{
+  "error": "invalid_2fa_code_or_password"
 }
 ```
 

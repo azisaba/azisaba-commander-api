@@ -4,6 +4,7 @@ import {router as loginRouter} from "./login"
 import {router as logoutRouter} from "./logout"
 import {router as meRouter} from "./me"
 import {router as twoFARouter} from "./2fa"
+import {router as changePassRouter} from "./change_password"
 import {router as usersIndex} from "./users/index"
 
 export const router = express.Router();
@@ -13,6 +14,7 @@ router.use('/login', loginRouter)
 router.use('/logout', logoutRouter)
 router.use('/me', meRouter)
 router.use('/2fa', twoFARouter)
+router.use('/changepassword', changePassRouter)
 router.use('/users', usersIndex)
 
 router.get('/', (req, res) => {

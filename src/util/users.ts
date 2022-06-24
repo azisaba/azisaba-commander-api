@@ -192,3 +192,19 @@ export const hasPermissionContent = async (userId: number, permissionContent: Pe
         return content.service === "*" || content.service === permissionContent.service
     })
 }
+
+export const getGroup = async (userId: number): Promise<string | null> => {
+    if (!userId) return null
+    const user = await getUser(userId)
+    if (!user) return null
+    return user.group
+}
+
+export const setGroup = async (userId: number, group: string): Promise<void> => {
+    if (!userId || !group) return
+    await sql.execute(
+        "UPDATE `users` SET `group`=? WHERE `id`=?",
+        group,
+        userId
+    )
+}

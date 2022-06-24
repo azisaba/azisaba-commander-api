@@ -22,13 +22,13 @@ router.get('/', async (req, res) => {
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
     }
+    //  permission check
+    if (!await userUtil.isAdmin(session.user_id)) {
+        return res.status(403).send({ "error": "forbidden" })
+    }
     //  param check
     if (!userId) {
         return res.status(400).send({ "error": "invalid_params"})
-    }
-    //  permission check
-    if (userId !== session.user_id && !await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
     }
 
     //  get all permission

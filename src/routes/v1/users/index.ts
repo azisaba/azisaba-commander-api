@@ -47,14 +47,14 @@ router.get('/:id', async (req, res) => {
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
     }
+    //  permission check
+    if (!await userUtil.isAdmin(session.user_id)) {
+        return res.status(403).send({ "error": "forbidden" })
+    }
     //  param check
     const id = +req.params.id
     if (!id) {
         return res.status(400).send({ "error": "invalid_params"})
-    }
-    //  permission check
-    if (id !== session.user_id && !await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
     }
 
     const user = await userUtil.getUser(id)
@@ -96,9 +96,17 @@ router.use(
         // @ts-ignore
         req.userId = req.params.id
         next()
-    }
-    ,permissionsRouter
+    },
+    permissionsRouter
 )
 //  Group
-router.use('/:id/group', groupRouter)
+router.use(
+    '/:id/group',
+    (req, res, next) => {
+        // @ts-ignore
+        req.userId = req.params.id
+        next()
+    },
+    groupRouter
+)
 

@@ -664,10 +664,20 @@ Status: 200
 
 **The Permission api enable to access Permission components**
 
-
-
 ***
 ### Get list of permissions
+
+***
+### Get a permission
+
+***
+### Create a permission
+
+***
+### Delete a permission
+
+***
+### Update a permission
 
 
 ***

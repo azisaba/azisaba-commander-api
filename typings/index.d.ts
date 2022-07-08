@@ -89,10 +89,29 @@ declare type Container = {
  *  ContainerStatus Type
  */
 declare type ContainerStatus = {
-    state: object
-    network_stats: object
-    memory_stats: object
-    cpu_stats: object
+    read_at: string
+    state: {
+        state: string,
+        status: string,
+        started_at: string,
+        finished_at: string
+    }
+    network_stats: {
+        tx_total_byte: number,
+        tx_byte_per_sec: number,
+        tx_packet_per_sec: number,
+        rx_total_byte: number,
+        rx_byte_per_sec: number,
+        rx_packet_per_sec: number
+    }
+    memory_stats: {
+        usage: number,
+        limit: number,
+        percent: number
+    }
+    cpu_stats: {
+        percent: number
+    }
 }
 
 /**

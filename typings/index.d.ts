@@ -99,9 +99,11 @@ declare type ContainerStatus = {
     network_stats: {
         tx_total_byte: number,
         tx_byte_per_sec: number,
+        tx_total_packet: number,
         tx_packet_per_sec: number,
         rx_total_byte: number,
         rx_byte_per_sec: number,
+        rx_total_packet: number,
         rx_packet_per_sec: number
     }
     memory_stats: {

@@ -1,4 +1,5 @@
 import Docker from 'dockerode'
+const debug = require('debug')('azisaba-commander-api:docker_handler')
 
 const _nodes = new Array<Docker>()
 const _container_statuses = new Map<string, ContainerStatus>()
@@ -86,6 +87,8 @@ const statusHandler = async () => {
                     percent: cpu_percent
                 }
             }
+
+            // debug(status)
 
             //  push
             _container_statuses.set(container.Id, status)

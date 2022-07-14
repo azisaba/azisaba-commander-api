@@ -2,6 +2,7 @@ import Docker, {Container} from 'dockerode'
 import {config} from './config'
 import {sleep} from "./util";
 import Dockerode from "dockerode";
+import * as dockerHandler from "./docker_handler"
 const debug = require('debug')('azisaba-commander-api:docker')
 
 const _nameDockerMap = new Map<string, Docker>();
@@ -68,6 +69,9 @@ export const init = async () => {
             }
         }
     }
+
+    //  init handler
+    dockerHandler.init(Array.from(_nameDockerMap.values()))
 }
 
 /**
@@ -113,35 +117,29 @@ export const getDocker = (name: string): Docker | undefined => {return _nameDock
  * @return Promise<Array<Container>>
  */
 export const getAllContainer = async (): Promise<Array<Container>> => {
-    const list = new Array<Container>()
+    const list = []
 
     for (const [name, node] of _nameDockerMap) {
         const nodeInfo = await node.info()
         const containers = await node.listContainers()
         for (const container of containers) {
             const containerInspection = await node.getContainer(container.Id).inspect();
-            const containerStats = await node.getContainer(container.Id).stats();
-            const formattedContainer = {
+            const containerStatus = dockerHandler.getStatus(container.Id)
+
+            const formattedContainer: Container = {
                 id: container.Id,
+                //  @ts-ignore
                 docker_id: nodeInfo.ID,
                 name: name,
                 created_at: containerInspection.Created,
                 project_name: container.Labels['com.docker.compose.project'],
                 service_name: container.Labels['com.docker.compose.service'],
-                status: {
-                    state: {
-                        state: container.State,
-                        status: container.Status,
-                        started_at: containerInspection.State.StartedAt,
-                        finished_at: containerInspection.State.FinishedAt
-                    },
-                    network_state: {
-
-                    },
-                    memory_states: {},
-                    cpu_states: {}
-                }
+                status: containerStatus
             }
+
+            list.push(formattedContainer)
         }
     }
+
+    return list
 }

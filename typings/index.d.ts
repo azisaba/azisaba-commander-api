@@ -91,7 +91,6 @@ declare type Container = {
 declare type ContainerStatus = {
     read_at: string
     state: {
-        state: string,
         status: string,
         started_at: string,
         finished_at: string

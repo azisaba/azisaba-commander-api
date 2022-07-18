@@ -1,8 +1,9 @@
-import Docker, {Container} from 'dockerode'
+import Docker from 'dockerode'
+import Dockerode, {Container} from 'dockerode'
 import {config} from './config'
 import {sleep} from "./util";
-import Dockerode from "dockerode";
 import * as dockerHandler from "./docker_handler"
+
 const debug = require('debug')('azisaba-commander-api:docker')
 
 const _nameDockerMap = new Map<string, Docker>();
@@ -174,7 +175,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
     }
     const status = dockerHandler.getStatus(containerId)
 
-    const formattedContainer: Container = {
+    return {
         id: inspection.Id,
         //  @ts-ignore
         docker_id: nodeInfo.ID,
@@ -184,7 +185,6 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
         service_name: inspection.Config.Labels['com.docker.compose.service'],
         status: status
     }
-    return formattedContainer
 }
 
 /**
@@ -206,7 +206,7 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
 
     const container = node.getContainer(containerId)
     await container.stop()
-        .catch(reason => {
+        .catch(() => {
             return false
         })
     return true
@@ -231,7 +231,7 @@ export const startContainer = async (nodeId: string, containerId: string): Promi
 
     const container = node.getContainer(containerId)
     await container.start()
-        .catch(reason => {
+        .catch(() => {
             return false
         })
     return true

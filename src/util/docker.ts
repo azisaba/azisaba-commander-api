@@ -143,3 +143,96 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 
     return list
 }
+
+/**
+ * Get a container
+ *
+ * @param nodeId
+ * @param containerId
+ * @return Promise<Container | undefined>
+ */
+export const getContainer = async (nodeId: string, containerId: string): Promise<Container | undefined> => {
+    let name: string | undefined = undefined
+    let node: Docker | undefined = undefined
+    for (const [key, value] of _nameDockerMap.entries()) {
+        const info = await value.info()
+        if (info.ID === nodeId) {
+            name = key
+            node = value
+            break
+        }
+    }
+    if (!name || !node) {
+        return undefined
+    }
+
+    //  container
+    const container = node.getContainer(containerId)
+    const inspection = await container.inspect().catch(() => undefined);
+    if (!inspection) {
+        return undefined
+    }
+    const status = dockerHandler.getStatus(containerId)
+
+    const formattedContainer: Container = {
+        id: inspection.Id,
+        //  @ts-ignore
+        docker_id: nodeInfo.ID,
+        name: name,
+        created_at: inspection.Created,
+        project_name: inspection.Config.Labels['com.docker.compose.project'],
+        service_name: inspection.Config.Labels['com.docker.compose.service'],
+        status: status
+    }
+    return formattedContainer
+}
+
+/**
+ * Stop a container
+ *
+ * @param nodeId
+ * @param containerId
+ * @return Promise<boolean>
+ */
+export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
+    const node = Array.from(_nameDockerMap.values()).find(async value => {
+        const info = await value.info()
+        return info.ID === nodeId
+    })
+
+    if (!node) {
+        return false
+    }
+
+    const container = node.getContainer(containerId)
+    await container.stop()
+        .catch(reason => {
+            return false
+        })
+    return true
+}
+
+/**
+ * Start a container
+ *
+ * @param nodeId
+ * @param containerId
+ * @return Promise<boolean>
+ */
+export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
+    const node = Array.from(_nameDockerMap.values()).find(async value => {
+        const info = await value.info()
+        return info.ID === nodeId
+    })
+
+    if (!node) {
+        return false
+    }
+
+    const container = node.getContainer(containerId)
+    await container.start()
+        .catch(reason => {
+            return false
+        })
+    return true
+}

@@ -192,7 +192,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
  *
  * @param nodeId
  * @param containerId
- * @return Promise<boolean>
+ * @return Promise<boolean> if process is succeed, return true
  */
 export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
     const node = Array.from(_nameDockerMap.values()).find(async value => {
@@ -206,8 +206,8 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
 
     const container = node.getContainer(containerId)
     await container.stop()
-        .catch(() => {
-            return false
+        .catch(reason => {
+            return reason.statusCode === 304;
         })
     return true
 }
@@ -217,7 +217,7 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
  *
  * @param nodeId
  * @param containerId
- * @return Promise<boolean>
+ * @return Promise<boolean> if process is succeed, return true
  */
 export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
     const node = Array.from(_nameDockerMap.values()).find(async value => {
@@ -231,8 +231,19 @@ export const startContainer = async (nodeId: string, containerId: string): Promi
 
     const container = node.getContainer(containerId)
     await container.start()
-        .catch(() => {
-            return false
+        .catch(reason => {
+            return reason.statusCode === 304;
         })
     return true
+}
+
+/**
+ * Restart a container
+ *
+ * @param nodeId
+ * @param containerId
+ * @return Promise<boolean> if process is succeed, return true
+ */
+export const restartContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
+    return await stopContainer(nodeId, containerId) && await startContainer(nodeId, containerId)
 }

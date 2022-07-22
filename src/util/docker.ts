@@ -1,5 +1,5 @@
 import Docker from 'dockerode'
-import Dockerode, {Container} from 'dockerode'
+import Dockerode from 'dockerode'
 import {config} from './config'
 import {sleep} from "./util";
 import * as dockerHandler from "./docker_handler"
@@ -135,6 +135,7 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
                 created_at: containerInspection.Created,
                 project_name: container.Labels['com.docker.compose.project'],
                 service_name: container.Labels['com.docker.compose.service'],
+                // @ts-ignore
                 status: containerStatus
             }
 
@@ -183,6 +184,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
         created_at: inspection.Created,
         project_name: inspection.Config.Labels['com.docker.compose.project'],
         service_name: inspection.Config.Labels['com.docker.compose.service'],
+        // @ts-ignore
         status: status
     }
 }

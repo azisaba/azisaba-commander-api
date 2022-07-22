@@ -16,10 +16,11 @@
 - [/permissions]()
   - [/:id]()
 - [/containers]()
-  - [/:id]()
-  - [/:id/start]()
-  - [/:id/stop]()
-  - [/:id/restart]()
+  - [/:nodeId/:containerId]()
+  - [/:nodeId/:containerId/start]()
+  - [/:nodeId/:containerId/stop]()
+  - [/:nodeId/:containerId/restart]()
+  - [/:nodeId/:containerId/logs]()
 
 ## Authentication
 

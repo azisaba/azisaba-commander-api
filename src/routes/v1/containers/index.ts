@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
     }
 
     const containers = await docker.getAllContainer()
-    let filteredContainers = new Array<Container>()
+    let filteredContainers: Container[]
     if (await userUtil.isAdmin(session.user_id)) {
         filteredContainers = containers
     } else {

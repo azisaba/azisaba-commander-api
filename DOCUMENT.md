@@ -21,6 +21,8 @@
   - [/:nodeId/:containerId/stop]()
   - [/:nodeId/:containerId/restart]()
   - [/:nodeId/:containerId/logs]()
+- [/logs]()
+  - [/logs/:id]()
 
 ## Authentication
 

@@ -116,6 +116,14 @@ declare type ContainerStatus = {
 }
 
 /**
+ *  ContainerLogs Type
+ */
+declare type ContainerLogs = {
+    read_at: number
+    logs: string
+}
+
+/**
  *  Type includes 2fa url and recovery keys
  */
 declare type TwoFAContent = {

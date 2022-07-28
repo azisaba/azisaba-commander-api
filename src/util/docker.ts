@@ -149,8 +149,8 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 /**
  * Get a container
  *
- * @param nodeId
- * @param containerId
+ * @param nodeId docker node id
+ * @param containerId container id
  * @return Promise<Container | undefined>
  */
 export const getContainer = async (nodeId: string, containerId: string): Promise<Container | undefined> => {
@@ -192,8 +192,8 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
 /**
  * Stop a container
  *
- * @param nodeId
- * @param containerId
+ * @param nodeId docker node id
+ * @param containerId container id
  * @return Promise<boolean> if process is succeed, return true
  */
 export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
@@ -207,6 +207,12 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
     }
 
     const container = node.getContainer(containerId)
+    //  check if container exists
+    const inspection = await container.inspect().catch(() => undefined);
+    if (!inspection) {
+        return false
+    }
+
     await container.stop()
         .catch(reason => {
             return reason.statusCode === 304;
@@ -217,8 +223,8 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
 /**
  * Start a container
  *
- * @param nodeId
- * @param containerId
+ * @param nodeId docker node id
+ * @param containerId container id
  * @return Promise<boolean> if process is succeed, return true
  */
 export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
@@ -232,6 +238,12 @@ export const startContainer = async (nodeId: string, containerId: string): Promi
     }
 
     const container = node.getContainer(containerId)
+    //  check if container exists
+    const inspection = await container.inspect().catch(() => undefined);
+    if (!inspection) {
+        return false
+    }
+
     await container.start()
         .catch(reason => {
             return reason.statusCode === 304;
@@ -242,10 +254,49 @@ export const startContainer = async (nodeId: string, containerId: string): Promi
 /**
  * Restart a container
  *
- * @param nodeId
- * @param containerId
+ * @param nodeId docker node id
+ * @param containerId container id
  * @return Promise<boolean> if process is succeed, return true
  */
 export const restartContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
     return await stopContainer(nodeId, containerId) && await startContainer(nodeId, containerId)
+}
+
+/**
+ * Get container's logs
+ *
+ * @param nodeId docker node id
+ * @param containerId container id
+ * @param since UNIX timestamp
+ */
+export const getLogs = async (nodeId: string, containerId: string, since: number = 0): Promise<ContainerLogs | undefined> => {
+    const node = Array.from(_nameDockerMap.values()).find(async value => {
+        const info = await value.info()
+        return info.ID === nodeId
+    })
+    if (!node) {
+        return undefined
+    }
+    const container = node.getContainer(containerId)
+    //  check if container exists
+    const inspection = await container.inspect().catch(() => undefined);
+    if (!inspection) {
+        return undefined
+    }
+
+    const logs = await container.logs({
+        follow: false,
+        stdout: true,
+        stderr: true,
+        since: +since
+    })
+
+    if (!Buffer.isBuffer(logs)) {
+        return undefined
+    }
+
+    return {
+        read_at: new Date().getDate(),
+        logs: logs.toString("utf-8")
+    }
 }

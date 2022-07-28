@@ -177,8 +177,18 @@ router.get('/:nodeId/:containerId/logs', async (req, res) => {
         return res.status(403).send({ "error": "forbidden" })
     }
 
-    //  todo return logs
+    let time = 0
+    if (!req.body || !req.body.since) {
+        time = +req.body.since
+    }
 
+    const logs = await docker.getLogs(
+        container.docker_id,
+        container.id,
+        time
+        )
+
+    return res.status(200).send(logs)
 })
 
 /**

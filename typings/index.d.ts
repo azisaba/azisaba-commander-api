@@ -22,15 +22,6 @@ declare type Session = {
     pending: int
 }
 
-/**
- *  Session status
- */
-declare const SessionStatus = {
-    AUTHORIZED: 0,
-    PENDING: -1,
-    UNDER_REVIEW: -2,
-    WAIT_2FA: -3
-}
 
 /**
  *  User Type

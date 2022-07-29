@@ -9,7 +9,7 @@ import {
     sleep
 } from '../../util/util'
 import * as crypto from "../../util/crypto"
-import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH} from "../../util/constants";
+import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus} from "../../util/constants";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:register')
 export const router = express.Router();

@@ -1,6 +1,6 @@
 import express from "express";
 import * as sql from "../../util/sql";
-import {SESSION_LENGTH, UNDER_REVIEW_TAG} from "../../util/constants";
+import {SESSION_LENGTH, SessionStatus, UNDER_REVIEW_TAG} from "../../util/constants";
 import * as crypto from "../../util/crypto"
 import {
     generateSecureRandomString,

@@ -1,7 +1,7 @@
 import express from "express"
 import crypto from 'crypto'
 import * as sql from "./sql";
-import {GROUP_ADMIN} from "./constants";
+import {GROUP_ADMIN, SessionStatus} from "./constants";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -138,8 +138,11 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
     return token
 }
 
-/*
-export const getUserPermission = async (id: number): Promise<Array<Permission>> => {
-    return await sql
+//  @ts-ignore
+export const protect = (fn: (req, res, next) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        await fn(req, res, next)
+    } catch (e) {
+        next(e)
+    }
 }
-*/

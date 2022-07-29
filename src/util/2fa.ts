@@ -139,5 +139,5 @@ export const isRegistered = async (userId: number): Promise<Boolean> => {
     return await sql.findOne(
         "SELECT `id` FROM `users_2fa` WHERE `user_id` = ?",
         userId
-    )
+    ) !== null
 }

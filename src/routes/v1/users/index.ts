@@ -2,7 +2,7 @@ import express from "express"
 import {router as permissionsRouter} from "./permissions"
 import {router as groupRouter} from "./group"
 import * as userUtil from "../../../util/users"
-import {validateAndGetSession} from "../../../util/util"
+import {protect, validateAndGetSession} from "../../../util/util"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:users:index')
 
@@ -17,7 +17,7 @@ export const router = express.Router();
  * Response:
  *
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
             "users": users
         }
     )
-})
+}))
 
 /**
  * Get a user profile
@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -60,7 +60,7 @@ router.get('/:id', async (req, res) => {
     const user = await userUtil.getUser(id)
 
     return res.status(200).send(user)
-})
+}))
 
 /**
  * delete a user
@@ -69,7 +69,7 @@ router.get('/:id', async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -87,7 +87,7 @@ router.delete('/:id', async (req, res) => {
     await userUtil.deleteUser(id)
 
     return res.status(200).send({ "message": "ok" })
-})
+}))
 
 //  Permission
 router.use(

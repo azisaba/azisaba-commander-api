@@ -1,5 +1,5 @@
 import express from "express";
-import {deleteSession, putSession, validateAndGetSession} from "../../util/util";
+import {deleteSession, protect, putSession, validateAndGetSession} from "../../util/util";
 import * as twoFA from "../../util/2fa";
 import {SessionStatus} from "../../util/constants";
 
@@ -16,7 +16,7 @@ export const router = express.Router();
  * - 200: success
  * - 4xx: failed
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     let session = await validateAndGetSession(req)
     if (!session) return res.status(401).send({ error : "unauthorized" })
 
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
         message : "authorized",
         state: session.state
     })
-})
+}))
 
 /**
  * Register a 2fa
@@ -57,7 +57,7 @@ router.get('/', async (req, res) => {
  *  - recovery: string[]
  * - 4xx: failed
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) return res.status(401).send({ error : "unauthorized" })
 
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
         url : content.url,
         recoveryCodes: content.recovery
     })
-})
+}))
 
 /**
  * Delete 2fa setting. need 2fa code or recovery code.
@@ -84,7 +84,7 @@ router.post('/', async (req, res) => {
  * - 200: success
  * - 4xx: failed
  */
-router.delete('/', async (req, res) => {
+router.delete('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) return res.status(401).send({ error : "unauthorized" })
     //  check parameter
@@ -102,4 +102,4 @@ router.delete('/', async (req, res) => {
     }
 
     return res.status(200).send({ message: "success" })
-})
+}))

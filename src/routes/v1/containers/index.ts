@@ -1,7 +1,7 @@
 import express from "express"
 import * as userUtil from "../../../util/users"
 import * as docker from "../../../util/docker"
-import {validateAndGetSession} from "../../../util/util"
+import {protect, validateAndGetSession} from "../../../util/util"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:container:index')
 
@@ -10,7 +10,7 @@ export const router = express.Router();
 /**
  * Get all container
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -36,12 +36,12 @@ router.get('/', async (req, res) => {
     return res.status(200).send({
         containers: filteredContainers
     })
-})
+}))
 
 /**
  * Get a container
  */
-router.get('/:nodeId/:containerId', async (req, res) => {
+router.get('/:nodeId/:containerId', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -60,12 +60,12 @@ router.get('/:nodeId/:containerId', async (req, res) => {
     }
 
     return res.status(200).send(container)
-})
+}))
 
 /**
  * Start a container
  */
-router.post('/:nodeId/:containerId/start', async (req, res) => {
+router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -91,13 +91,13 @@ router.post('/:nodeId/:containerId/start', async (req, res) => {
     }
 
     return res.status(200).send({ "message": "started" })
-})
+}))
 
 
 /**
  * Stop a container
  */
-router.post('/:nodeId/:containerId/stop', async (req, res) => {
+router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -123,12 +123,12 @@ router.post('/:nodeId/:containerId/stop', async (req, res) => {
     }
 
     return res.status(200).send({ "message": "stopped" })
-})
+}))
 
 /**
  * Restart a container
  */
-router.post('/:nodeId/:containerId/restart', async (req, res) => {
+router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -154,12 +154,12 @@ router.post('/:nodeId/:containerId/restart', async (req, res) => {
     }
 
     return res.status(200).send({ "message": "restarted" })
-})
+}))
 
 /**
  * Get a container logs
  */
-router.get('/:nodeId/:containerId/logs', async (req, res) => {
+router.get('/:nodeId/:containerId/logs', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -189,7 +189,7 @@ router.get('/:nodeId/:containerId/logs', async (req, res) => {
         )
 
     return res.status(200).send(logs)
-})
+}))
 
 /**
  * check if user have permission of target container

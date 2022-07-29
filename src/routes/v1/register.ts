@@ -6,7 +6,7 @@ import {
     getIP,
     getSession,
     putSession,
-    sleep
+    sleep, protect
 } from '../../util/util'
 import * as crypto from "../../util/crypto"
 import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus} from "../../util/constants";
@@ -26,7 +26,7 @@ export const router = express.Router();
  *  - status: 400
  *      description: something wrong
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     //  check param
     if (!req.body || typeof req.body !== 'object') return res.status(400).send({error: 'invalid_params'})
     const username = req.body['username']
@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
         //  done
         res.status(200).send({ message: 'ok' })
     });
-})
+}))
 
 /**
  * verify an account
@@ -75,7 +75,7 @@ router.post('/', async (req, res) => {
  * Response:
  * - state: string
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect(async (req, res) => {
     const session = await getSession(String(req.params.id))
     if (!session || session.pending !== SessionStatus.UNDER_REVIEW) return res.status(403).send({ error: 'forbidden' })
     //  check group
@@ -100,4 +100,4 @@ router.get('/:id', async (req, res) => {
     return res.status(200).send({
         state: verified.state
     })
-})
+}))

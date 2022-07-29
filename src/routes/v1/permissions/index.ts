@@ -1,7 +1,7 @@
 import express from "express"
 import * as userUtil from "../../../util/users"
 import * as permissionUtil from "../../../util/permission"
-import {validateAndGetSession} from "../../../util/util"
+import {protect, validateAndGetSession} from "../../../util/util"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:permissions:index')
 
@@ -11,7 +11,7 @@ export const router = express.Router();
  * Get all permission
  * Require: Admin
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -28,7 +28,7 @@ router.get('/', async (req, res) => {
             permissions: permissions
         }
     )
-})
+}))
 
 /**
  * Get a permission
@@ -37,7 +37,7 @@ router.get('/', async (req, res) => {
  * Parameter:
  * - id: permission id
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -58,7 +58,7 @@ router.get('/:id', async (req, res) => {
             permission: permission
         }
     )
-})
+}))
 
 /**
  * Create a permission
@@ -71,7 +71,7 @@ router.get('/:id', async (req, res) => {
  *     - service: string
  * }
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -101,7 +101,7 @@ router.post('/', async (req, res) => {
         message: 'ok',
         id: id
     })
-})
+}))
 
 /**
  * Update a permission
@@ -115,7 +115,7 @@ router.post('/', async (req, res) => {
  *     - service: string
  * }
  */
-router.patch('/', async (req, res) => {
+router.patch('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -141,7 +141,7 @@ router.patch('/', async (req, res) => {
         message: 'ok',
         permission: await permissionUtil.get(permission.id)
     })
-})
+}))
 
 
 /**
@@ -152,7 +152,7 @@ router.patch('/', async (req, res) => {
  * - id: number
  * }
  */
-router.delete('/', async (req, res) => {
+router.delete('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -176,4 +176,4 @@ router.delete('/', async (req, res) => {
     return res.status(200).send({
         message: 'ok'
     })
-})
+}))

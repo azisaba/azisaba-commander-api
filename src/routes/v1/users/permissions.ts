@@ -1,5 +1,5 @@
 import express from "express"
-import {validateAndGetSession} from "../../../util/util";
+import {protect, validateAndGetSession} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import * as permissionUtil from "../../../util/permission";
 
@@ -14,7 +14,7 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     //  session
@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
             "permissions": permissions
         }
     )
-})
+}))
 
 /**
  * add a permission
@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.post('/:permission_id', async (req, res) => {
+router.post('/:permission_id', protect(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id
@@ -85,7 +85,7 @@ router.post('/:permission_id', async (req, res) => {
     await userUtil.addPermission(userId, +permissionId)
 
     return res.status(200).send({ "message": "ok" })
-})
+}))
 
 /**
  * delete a permission from user
@@ -95,7 +95,7 @@ router.post('/:permission_id', async (req, res) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.delete('/:permission_id', async (req, res) => {
+router.delete('/:permission_id', protect(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id
@@ -126,4 +126,4 @@ router.delete('/:permission_id', async (req, res) => {
     await userUtil.removePermission(userId, +permissionId)
 
     return res.status(200).send({ "message": "ok" })
-})
+}))

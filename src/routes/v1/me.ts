@@ -1,5 +1,5 @@
 import express from "express";
-import {validateAndGetSession} from "../../util/util";
+import {protect, validateAndGetSession} from "../../util/util";
 import * as sql from "../../util/sql";
 import * as userUtil from "../../util/users";
 import * as twoFA from "../../util/2fa";
@@ -14,7 +14,7 @@ export const router = express.Router();
  * Request:
  * - state: string
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) return res.status(404).send({error: 'not_found'})
     const user = await sql.findOne("SELECT `id`, `username`, `group`, `last_update` FROM `users` WHERE `id` = ?", session.user_id)
@@ -30,4 +30,4 @@ router.get('/', async (req, res) => {
             "2fa": is2Fa
         }
     )
-})
+}))

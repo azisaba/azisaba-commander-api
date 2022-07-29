@@ -1,5 +1,5 @@
 import express from "express";
-import {validateAndGetSession} from "../../../util/util";
+import {protect, validateAndGetSession} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 
 export const router = express.Router();
@@ -11,7 +11,7 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', async (req, res) => {
+router.get('/', protect(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     //  session
@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
             "group": user.group
         }
     )
-})
+}))
 
 /**
  * set user's group
@@ -46,7 +46,7 @@ router.get('/', async (req, res) => {
  * Body:
  * - group: group name
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     //  session
@@ -75,4 +75,4 @@ router.post('/', async (req, res) => {
             "message": "ok"
         }
     )
-})
+}))

@@ -1,5 +1,5 @@
 import express from "express";
-import {validateAndGetSession} from "../../util/util";
+import {protect, validateAndGetSession} from "../../util/util";
 import * as twoFA from "../../util/2fa";
 import * as userUtil from "../../util/users";
 import * as crypto from "../../util/crypto";
@@ -20,7 +20,7 @@ export const router = express.Router();
  * - 200: success
  * - 4xx: failed
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     let session = await validateAndGetSession(req)
     if (!session) return res.status(401).send({ error : "unauthorized" })
 
@@ -61,4 +61,4 @@ router.post('/', async (req, res) => {
     await userUtil.changePassword(session.user_id, newPassword)
 
     return res.status(200).send({ message: "ok" })
-})
+}))

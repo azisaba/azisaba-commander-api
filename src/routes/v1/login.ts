@@ -4,7 +4,7 @@ import {SESSION_LENGTH, SessionStatus, UNDER_REVIEW_TAG} from "../../util/consta
 import * as crypto from "../../util/crypto"
 import {
     generateSecureRandomString,
-    getIP,
+    getIP, protect,
     putSession,
     sleep
 } from "../../util/util";
@@ -27,7 +27,7 @@ export const router = express.Router();
  * - 200: Success
  * - 400: Failed
  */
-router.post('/', async (req, res) => {
+router.post('/', protect(async (req, res) => {
     //  check param
     if (!req.body || typeof req.body !== 'object') return res.status(400).send({error: 'invalid_params'})
     const username = req.body['username']
@@ -67,4 +67,4 @@ router.post('/', async (req, res) => {
             message: 'logged_in'
         })
     });
-})
+}))

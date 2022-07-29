@@ -46,4 +46,9 @@ This repository adopts git-flow.
 
 ## License
 
-Apache-2.0 License
+MIT License
+
+## References
+
+- [SpicyAzisaBan-API](https://github.com/AzisabaNetwork/SpicyAzisaBan-API)  
+Created By [Acrylic Style](https://github.com/acrylic-style)

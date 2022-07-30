@@ -122,3 +122,13 @@ declare type TwoFAContent = {
     url: string
     recovery: string[]
 }
+
+/**
+ *
+ */
+declare type LogGetterOption = {
+    userId?: number,
+    limit?: number,
+    since?: Date,
+    until?: Date
+}

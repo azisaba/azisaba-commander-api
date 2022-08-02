@@ -128,7 +128,11 @@ declare type TwoFAContent = {
  */
 declare type LogGetterOption = {
     userId?: number,
-    limit?: number,
-    since?: Date,
-    until?: Date
+    limit?: number
+}
+
+declare type Log = {
+    userId?: number,
+    message: string,
+    date: string
 }

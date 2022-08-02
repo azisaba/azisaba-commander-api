@@ -1,6 +1,7 @@
 import express from "express";
 import {protect, validateAndGetSession} from "../../../util/util";
 import * as userUtil from "../../../util/users";
+import {commit} from "../../../util/logs";
 
 export const router = express.Router();
 
@@ -69,6 +70,9 @@ router.post('/', protect(async (req, res) => {
     }
 
     await userUtil.setGroup(userId, req.body.group)
+
+    //  log
+    await commit(session.user_id, `set ${userId}'s group as ${req.body.group}`)
 
     return res.status(200).send(
         {

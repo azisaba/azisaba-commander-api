@@ -2,6 +2,7 @@ import express from "express"
 import {protect, validateAndGetSession} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import * as permissionUtil from "../../../util/permission";
+import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:users:permissions')
 
@@ -84,6 +85,9 @@ router.post('/:permission_id', protect(async (req, res) => {
     //  add permission
     await userUtil.addPermission(userId, +permissionId)
 
+    //  log
+    await commit(session.user_id, `give permission ${permissionId} to ${userId}`)
+
     return res.status(200).send({ "message": "ok" })
 }))
 
@@ -124,6 +128,9 @@ router.delete('/:permission_id', protect(async (req, res) => {
 
     //  add permission
     await userUtil.removePermission(userId, +permissionId)
+
+    //  log
+    await commit(session.user_id, `remove permission ${permissionId} from ${userId}`)
 
     return res.status(200).send({ "message": "ok" })
 }))

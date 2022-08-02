@@ -3,6 +3,7 @@ import {router as permissionsRouter} from "./permissions"
 import {router as groupRouter} from "./group"
 import * as userUtil from "../../../util/users"
 import {protect, validateAndGetSession} from "../../../util/util"
+import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:users:index')
 
@@ -85,6 +86,9 @@ router.delete('/:id', protect(async (req, res) => {
 
     //  delete
     await userUtil.deleteUser(id)
+
+    //  log
+    await commit(session.user_id, `delete ${id}'s profile`)
 
     return res.status(200).send({ "message": "ok" })
 }))

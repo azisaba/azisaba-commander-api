@@ -2,6 +2,7 @@ import express from "express"
 import * as userUtil from "../../../util/users"
 import * as docker from "../../../util/docker"
 import {protect, validateAndGetSession} from "../../../util/util"
+import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:container:index')
 
@@ -90,6 +91,9 @@ router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
         return res.status(304).send( { "message": "container is already started" })
     }
 
+    //  log
+    await commit(session.user_id, `Start a container. ${req.params.nodeId}:${req.params.containerId}`)
+
     return res.status(200).send({ "message": "started" })
 }))
 
@@ -122,6 +126,9 @@ router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
         return res.status(304).send( { "message": "container is already stopped" })
     }
 
+    //  log
+    await commit(session.user_id, `Stop a container. ${req.params.nodeId}:${req.params.containerId}`)
+
     return res.status(200).send({ "message": "stopped" })
 }))
 
@@ -152,6 +159,9 @@ router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
     if (!result) {
         return res.status(500).send( { "message": "something went wrong" })
     }
+
+    //  log
+    await commit(session.user_id, `Restart a container. ${req.params.nodeId}:${req.params.containerId}`)
 
     return res.status(200).send({ "message": "restarted" })
 }))

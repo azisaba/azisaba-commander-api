@@ -82,8 +82,18 @@ router.post('/:permission_id', protect(async (req, res) => {
         return res.status(400).send({ "error": "invalid_permission" })
     }
 
+    //  check if user has permission
+    if (await userUtil.hasPermission(userId, +permissionId)) {
+        return res.status(400).send({ "error": "user_already_has" })
+    }
+
     //  add permission
     await userUtil.addPermission(userId, +permissionId)
+
+    //  check if user has permission
+    if (!await userUtil.hasPermission(userId, +permissionId)) {
+        return res.status(500).send({ "error": "something went wrong" })
+    }
 
     //  log
     await commit(session.user_id, `give permission ${permissionId} to ${userId}`)
@@ -121,13 +131,19 @@ router.delete('/:permission_id', protect(async (req, res) => {
     if (!await userUtil.existUser(userId)) {
         return res.status(400).send({ "error": "invalid_user" })
     }
-    //  permission exist
-    if (!await permissionUtil.exist(+permissionId)) {
-        return res.status(400).send({ "error": "invalid_permission" })
+
+    //  check if user has permission
+    if (!await userUtil.hasPermission(userId, +permissionId)) {
+        return res.status(404).send({ "error": "user_not_has" })
     }
 
     //  add permission
     await userUtil.removePermission(userId, +permissionId)
+
+    //  check if user has permission
+    if (await userUtil.hasPermission(userId, +permissionId)) {
+        return res.status(500).send({ "error": "something went wrong" })
+    }
 
     //  log
     await commit(session.user_id, `remove permission ${permissionId} from ${userId}`)

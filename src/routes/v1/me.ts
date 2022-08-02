@@ -16,7 +16,7 @@ export const router = express.Router();
  */
 router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
-    if (!session) return res.status(404).send({error: 'not_found'})
+    if (!session) return res.status(401).send({error: 'unauthorized'})
     const user = await sql.findOne("SELECT `id`, `username`, `group`, `last_update` FROM `users` WHERE `id` = ?", session.user_id)
     if (!user) return res.status(401).send({error: 'unauthorized'})
 

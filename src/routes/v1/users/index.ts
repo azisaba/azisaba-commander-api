@@ -60,6 +60,10 @@ router.get('/:id', protect(async (req, res) => {
 
     const user = await userUtil.getUser(id)
 
+    if (!user) {
+        return res.status(404).send({ "error": "not_found"})
+    }
+
     return res.status(200).send(user)
 }))
 

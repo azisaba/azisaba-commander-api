@@ -1,7 +1,7 @@
 import express from "express"
 import crypto from 'crypto'
 import * as sql from "./sql";
-import {GROUP_ADMIN, SessionStatus} from "./constants";
+import {SessionStatus} from "./constants";
 
 //  session cache
 const sessions: SessionTable = {}

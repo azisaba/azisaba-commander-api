@@ -24,8 +24,8 @@ router.get('/', protect(async (req, res) => {
     }
 
     const option: LogGetterOption = {
-        userId: req.query.userId,
-        limit: req.query.limit
+        userId: +req.query.userId,
+        limit: +req.query.limit
     }
     const result = await logsUtil.get(option)
 

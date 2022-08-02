@@ -56,7 +56,7 @@ router.get('/:nodeId/:containerId', protect(async (req, res) => {
         return res.status(404).send({ "error": "container_not_found" })
     }
     //  permission
-    if (await checkContainerPermission(session.user_id, container)) {
+    if (!await checkContainerPermission(session.user_id, container)) {
         return res.status(403).send({ "error": "forbidden" })
     }
 
@@ -80,7 +80,7 @@ router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
         return res.status(404).send({ "error": "container_not_found" })
     }
     //  permission
-    if (await checkContainerPermission(session.user_id, container)) {
+    if (!await checkContainerPermission(session.user_id, container)) {
         return res.status(403).send({ "error": "forbidden" })
     }
 
@@ -92,7 +92,7 @@ router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
     }
 
     //  log
-    await commit(session.user_id, `Start a container. ${req.params.nodeId}:${req.params.containerId}`)
+    await commit(session.user_id, `Start a container. ${container.project_name}:${container.service_name}`)
 
     return res.status(200).send({ "message": "started" })
 }))
@@ -115,7 +115,7 @@ router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
         return res.status(404).send({ "error": "container_not_found" })
     }
     //  permission
-    if (await checkContainerPermission(session.user_id, container)) {
+    if (!await checkContainerPermission(session.user_id, container)) {
         return res.status(403).send({ "error": "forbidden" })
     }
 
@@ -127,7 +127,7 @@ router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
     }
 
     //  log
-    await commit(session.user_id, `Stop a container. ${req.params.nodeId}:${req.params.containerId}`)
+    await commit(session.user_id, `Stop a container. ${container.project_name}:${container.service_name}`)
 
     return res.status(200).send({ "message": "stopped" })
 }))
@@ -149,7 +149,7 @@ router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
         return res.status(404).send({ "error": "container_not_found" })
     }
     //  permission
-    if (await checkContainerPermission(session.user_id, container)) {
+    if (!await checkContainerPermission(session.user_id, container)) {
         return res.status(403).send({ "error": "forbidden" })
     }
 
@@ -161,7 +161,7 @@ router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
     }
 
     //  log
-    await commit(session.user_id, `Restart a container. ${req.params.nodeId}:${req.params.containerId}`)
+    await commit(session.user_id, `Restart a container. ${container.project_name}:${container.service_name}`)
 
     return res.status(200).send({ "message": "restarted" })
 }))
@@ -183,7 +183,7 @@ router.get('/:nodeId/:containerId/logs', protect(async (req, res) => {
         return res.status(404).send({ "error": "container_not_found" })
     }
     //  permission
-    if (await checkContainerPermission(session.user_id, container)) {
+    if (!await checkContainerPermission(session.user_id, container)) {
         return res.status(403).send({ "error": "forbidden" })
     }
 
@@ -207,8 +207,8 @@ router.get('/:nodeId/:containerId/logs', protect(async (req, res) => {
  * @param container
  */
 const checkContainerPermission = async (user_id: number,container: Container): Promise<boolean> => {
-    return !await userUtil.isAdmin(user_id)  &&
-        !await userUtil.hasPermissionContent(
+    return await userUtil.isAdmin(user_id)  ||
+        await userUtil.hasPermissionContent(
             user_id,
             {
                 project: container.project_name,

@@ -42,7 +42,16 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
-//  todo create not found direction
+//  404, 500
+/*
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.status(404).send({ error: 'not_found' })
+})
+ */
+app.use((err: Error, req:express.Request, res: express.Response, next: express.NextFunction) =>  {
+    debug("an unexpected error occurred: ", err.stack);
+    res.status(500).send('Something broke!');
+});
 
 //  API Request rate limit
 let apiRequests: { [ip: string]: number } = {}

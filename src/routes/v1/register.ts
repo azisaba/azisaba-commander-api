@@ -9,7 +9,7 @@ import {
     sleep, protect
 } from '../../util/util'
 import * as crypto from "../../util/crypto"
-import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus} from "../../util/constants";
+import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus, GROUP_USER} from "../../util/constants";
 import {commit} from "../../util/logs"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:register')
@@ -36,7 +36,13 @@ router.post('/', protect(async (req, res) => {
     //  check null, length
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  check if user or ip already exists
+    /*
     if (await sql.findOne('SELECT `id` FROM users WHERE `username`=? OR `ip`=?', username, getIP(req))) {
+        return res.status(400).send({ error: 'dupe_user' })
+    }
+    */
+    //  todo remove this
+    if (await sql.findOne('SELECT `id` FROM users WHERE `username`=?', username)) {
         return res.status(400).send({ error: 'dupe_user' })
     }
 
@@ -93,7 +99,7 @@ router.get('/:id', protect(async (req, res) => {
     //  accept request
     const result = await sql.query(
         'UPDATE `users` SET `group`=? WHERE `id`=?',
-        'user',
+        GROUP_USER,
         session.user_id
     )
     if (!result) return res.status(404).send( { error: 'not_found' })

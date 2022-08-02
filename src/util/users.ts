@@ -68,10 +68,7 @@ export const deleteUser = async (userId: number): Promise<void> => {
  */
 export const existUser = async (userId: number): Promise<Boolean> => {
     if (!userId) return false
-    return !await sql.findOne(
-        "SELECT `id` FROM `users` WHERE `id`=?",
-        userId
-    )
+    return await getUser(userId) !== null;
 }
 
 /**
@@ -125,7 +122,7 @@ export const getAllPermissionContents = async (userId: number): Promise<Array<Pe
 
     let contents = new Array<PermissionContent>()
     for (const permission of permissions) {
-        contents.concat(permission.content)
+        permission.content.forEach(value => contents.push(value))
     }
     return contents
 }
@@ -165,11 +162,11 @@ export const removePermission = async (userId: number, permissionId: number): Pr
  */
 export const hasPermission = async (userId: number, permissionId: number) => {
     if (!userId || !permissionId) return false
-    return !await sql.findOne(
+    return await sql.findOne(
         "SELECT `id` FROM `users_permission` WHERE `user_id`=? AND `permission_id`=?",
         userId,
         permissionId
-    )
+    ) !== null
 }
 
 /**
@@ -179,7 +176,7 @@ export const hasPermission = async (userId: number, permissionId: number) => {
  * @param permissionContent
  * @return boolean if user has return true
  */
-export const hasPermissionContent = async (userId: number, permissionContent: PermissionContent): Promise<Boolean> => {
+export const hasPermissionContent = async (userId: number, permissionContent: PermissionContent): Promise<boolean> => {
     const contents = await getAllPermissionContents(userId)
     if (!contents) return false
 

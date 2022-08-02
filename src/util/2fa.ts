@@ -8,10 +8,10 @@ import {generateSecureRandomString} from "./util";
  * @param userId
  * @return TwoFAContent
  */
-export const register = async (userId: number): Promise<TwoFAContent | null> => {
+export const register = async (userId: number): Promise<TwoFAContent | undefined> => {
     //  check if user has already registered
-    if ( await isRegistered(userId)) {
-        return null
+    if (await isRegistered(userId)) {
+        return undefined
     }
 
     //  generate secret
@@ -29,7 +29,7 @@ export const register = async (userId: number): Promise<TwoFAContent | null> => 
         secret.base32
     );
 
-    //  generate 10 recovery codes and save them
+    //  generate 5 recovery codes(length 10) and save them
     const recoveryCodes = await Promise.all([
         generateSecureRandomString(5), // 1
         generateSecureRandomString(5), // 2
@@ -74,17 +74,17 @@ export const register = async (userId: number): Promise<TwoFAContent | null> => 
  * @param returnTrueIfSecretNotFond
  * @return Boolean
  */
-export const verify = async (userId: number, code: string, returnTrueIfSecretNotFond = false): Promise<Boolean> => {
+export const verify = async (userId: number, code: string, returnTrueIfSecretNotFond = false): Promise<boolean> => {
 
     //  get secret from db
     const secret = await sql.findOne(
-        "SELECT `secret` FROM `users_2fa` WHERE `user_id` = ?",
+        "SELECT `secret_key` FROM `users_2fa` WHERE `user_id` = ?",
         userId
     )
     if (!secret) return returnTrueIfSecretNotFond
 
     //  if token is recovery code
-    if (code.length === 5) {
+    if (code.length === 10) {
         const recoveryId = await sql.findOne(
             "SELECT `id`, `used` FROM `users_2fa_recovery` WHERE `user_id` = ? AND `code` = ? AND `used` = 0",
             userId,
@@ -92,14 +92,17 @@ export const verify = async (userId: number, code: string, returnTrueIfSecretNot
         )
         if (!recoveryId) return false
         //  remark code used
-        await sql.execute("UPDATE `users_2fa_recovery` SET `used` = 1 WHERE `id` = ?")
+        await sql.execute(
+            "UPDATE `users_2fa_recovery` SET `used` = 1 WHERE `id` = ?",
+            recoveryId.id
+            )
 
         return true
     }
 
     //  verify
     return speakeasy.totp.verify({
-        secret: secret,
+        secret: secret.secret_key,
         encoding: 'base32',
         token: code
     })
@@ -112,7 +115,7 @@ export const verify = async (userId: number, code: string, returnTrueIfSecretNot
  * @param code
  * @return Boolean
  */
-export const disable = async (userId: number, code: string): Promise<Boolean> => {
+export const disable = async (userId: number, code: string): Promise<boolean> => {
     if (!await verify(userId, code))  return false
 
     //  delete secret
@@ -135,7 +138,7 @@ export const disable = async (userId: number, code: string): Promise<Boolean> =>
  * @param userId
  * @return Boolean
  */
-export const isRegistered = async (userId: number): Promise<Boolean> => {
+export const isRegistered = async (userId: number): Promise<boolean> => {
     return await sql.findOne(
         "SELECT `id` FROM `users_2fa` WHERE `user_id` = ?",
         userId

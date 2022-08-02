@@ -7,6 +7,9 @@ import * as sql from "./sql"
  * @return Permission
  */
 export const get = async (id: number): Promise<Permission | null> => {
+    if (isNaN(id)) {
+        return null
+    }
     const p = await sql.findOne(
         "SELECT * FROM `permissions` WHERE `id`=?",
         id
@@ -27,7 +30,7 @@ export const get = async (id: number): Promise<Permission | null> => {
  * @return Array<Permission>
  */
 export const getAll = async (): Promise<Array<Permission> | null> => {
-    const p = await sql.findOne(
+    const p = await sql.findAll(
         "SELECT * FROM `permissions`"
     )
     //  if not find, return null
@@ -82,10 +85,10 @@ export const update = async (permission: Permission): Promise<void> => {
 
 export const exist = async (id: number): Promise<boolean> => {
     if (!id) return false
-    return !await sql.findOne(
+    return await sql.findOne(
         "SELECT `id` FROM `permissions` WHERE `id`=?",
         id
-    )
+    ) !== null
 }
 
 /**

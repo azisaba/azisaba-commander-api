@@ -8,6 +8,7 @@ import {router as changePassRouter} from "./change_password"
 import {router as usersIndex} from "./users/index"
 import {router as permissionsIndex} from "./permissions/index"
 import {router as containersIndex} from "./containers/index"
+import {router as logsIndex} from "./logs"
 
 export const router = express.Router();
 
@@ -20,6 +21,7 @@ router.use('/changepassword', changePassRouter)
 router.use('/users', usersIndex)
 router.use('/permissions', permissionsIndex)
 router.use('/containers', containersIndex)
+router.use('/logs', logsIndex)
 
 router.get('/', (req, res) => {
     res.send('Server is Online!');

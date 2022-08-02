@@ -174,17 +174,16 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
     if (!inspection) {
         return undefined
     }
-    const status = dockerHandler.getStatus(containerId)
+    const status = dockerHandler.getStatus(inspection.Id)
 
     return {
         id: inspection.Id,
-        //  @ts-ignore
-        docker_id: nodeInfo.ID,
+        docker_id: nodeId,
         name: name,
         created_at: inspection.Created,
         project_name: inspection.Config.Labels['com.docker.compose.project'],
         service_name: inspection.Config.Labels['com.docker.compose.service'],
-        // @ts-ignore
+        //  @ts-ignore
         status: status
     }
 }

@@ -28,6 +28,8 @@ router.post('/', protect(async (req, res) => {
     if (!req.body || typeof req.body !== 'object'){
         return res.status(400).send({error: "invalid_params"})
     }
+    console.log(req.body)
+
     const oldPassword = req.body['old']
     const newPassword = req.body['new']
     const twoFaCode = req.body['code']

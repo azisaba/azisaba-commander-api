@@ -60,6 +60,10 @@ router.get('/:id', protect(async (req, res) => {
 
     const user = await userUtil.getUser(id)
 
+    if (!user) {
+        return res.status(404).send({ "error": "not_found"})
+    }
+
     return res.status(200).send(user)
 }))
 
@@ -84,8 +88,17 @@ router.delete('/:id', protect(async (req, res) => {
         return res.status(400).send({ "error": "invalid_params"})
     }
 
+    //  check if user exists
+    if (!await userUtil.existUser(id)) {
+        return res.status(404).send({ "error": "not_found" })
+    }
+
     //  delete
     await userUtil.deleteUser(id)
+
+    if (await userUtil.existUser(id)) {
+        return res.status(500).send({ "error": "something went wrong" })
+    }
 
     //  log
     await commit(session.user_id, `delete ${id}'s profile`)

@@ -32,6 +32,9 @@ const statusHandler = async () => {
             let total_byte_rx = 0
             let total_packet_tx = 0;
             let total_packet_rx = 0;
+            if (!stats.networks) {
+                continue
+            }
             for (const [, network] of Object.entries(stats.networks)) {
                 total_byte_tx += network.tx_bytes
                 total_byte_rx += network.rx_bytes
@@ -87,8 +90,6 @@ const statusHandler = async () => {
                     percent: cpu_percent
                 }
             }
-
-            // debug(status)
 
             //  push
             _container_statuses.set(container.Id, status)

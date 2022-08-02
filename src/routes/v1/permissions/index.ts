@@ -20,7 +20,7 @@ router.get('/', protect(async (req, res) => {
         return res.status(403).send({ "error": "forbidden" })
     }
     //  get all permission
-    const permissions = permissionUtil.getAll()
+    const permissions = await permissionUtil.getAll()
 
     return res.status(200).send(
         {
@@ -49,8 +49,11 @@ router.get('/:id', protect(async (req, res) => {
         return res.status(400).send({ "error": "invalid_param" })
     }
 
-    //  get all permission
-    const permission = permissionUtil.get(+req.params.id)
+    //  get permission
+    const permission = await permissionUtil.get(+req.params.id)
+    if (permission === null) {
+        return res.status(404).send({ "error": "not_found" })
+    }
 
     return res.status(200).send(
         {
@@ -134,6 +137,10 @@ router.patch('/', protect(async (req, res) => {
         content: req.body.content
     }
 
+    if (!await permissionUtil.exist(permission.id)) {
+        return res.status(404).send({ "error": "not_found" })
+    }
+
     //  update
     await permissionUtil.update(permission)
 
@@ -152,7 +159,7 @@ router.patch('/', protect(async (req, res) => {
  * - id: number
  * }
  */
-router.delete('/', protect(async (req, res) => {
+router.delete('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
         return res.status(401).send({ "error": "not_authorized"})
@@ -161,16 +168,20 @@ router.delete('/', protect(async (req, res) => {
         return res.status(403).send({ "error": "forbidden" })
     }
     //  param check
-    if (!req.body || !req.body.id) {
+    if (!req.params || !req.params.id) {
         return res.status(400).send({ error: 'invalid_param'})
     }
 
-    const id = req.body.id
+    const id = req.params.id
+
+    if (!await permissionUtil.exist(id)) {
+        return res.status(404).send({ "error": "not_found" })
+    }
 
     await permissionUtil.remove(id)
 
     if (await permissionUtil.exist(id)) {
-        return res.status(400).send({ error: 'cannot_remove'})
+        return res.status(400).send({ error: 'failed_remove'})
     }
 
     return res.status(200).send({

@@ -1,5 +1,5 @@
 import express from "express";
-import {deleteSession, protect, putSession, validateAndGetSession} from "../../util/util";
+import {deleteSession, getSession, getSessionKey, protect, putSession, validateAndGetSession} from "../../util/util";
 import * as twoFA from "../../util/2fa";
 import {SessionStatus} from "../../util/constants";
 
@@ -17,7 +17,10 @@ export const router = express.Router();
  * - 4xx: failed
  */
 router.get('/', protect(async (req, res) => {
-    let session = await validateAndGetSession(req)
+    // let session = await validateAndGetSession(req)
+    const key = getSessionKey(req)
+    if (!key) return res.status(401).send({ error : "unauthorized" })
+    const session = await getSession(key)
     if (!session) return res.status(401).send({ error : "unauthorized" })
 
     //  check if this session need a 2fa

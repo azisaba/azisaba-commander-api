@@ -50,13 +50,14 @@ router.post('/', protect(async (req, res) => {
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
         if (!state) return res.status(408).send({ error: 'timed_out' })
+        const registeredTwoFA = await twoFA.isRegistered(user.id)
         //  put
         await putSession({
             state,
             expires_at: Date.now() + SESSION_LENGTH,
             user_id: user.id,
             ip: getIP(req),
-            pending: await twoFA.isRegistered(user.user_id) ? SessionStatus.WAIT_2FA : SessionStatus.AUTHORIZED
+            pending: registeredTwoFA ? SessionStatus.WAIT_2FA : SessionStatus.AUTHORIZED
         })
         //  cookie
         res.cookie("azisabacommander_session", state)
@@ -64,7 +65,8 @@ router.post('/', protect(async (req, res) => {
         //  done
         res.status(200).send({
             state: state,
-            message: 'logged_in'
+            message: 'logged_in',
+            wait_2fa: registeredTwoFA
         })
     });
 }))

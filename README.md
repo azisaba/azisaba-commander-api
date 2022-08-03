@@ -1,6 +1,7 @@
 # azisaba-commander-api
 
-This is Rest-ful API for azisaba-commander-web.
+This is Rest-ful API for azisaba-commander-web.  
+You can figure out how to use this api, please visit [API Document](DOCUMENT.md).
 
 ## Install with docker-compose
 
@@ -46,4 +47,9 @@ This repository adopts git-flow.
 
 ## License
 
-Apache-2.0 License
+MIT License
+
+## References
+
+- [SpicyAzisaBan-API](https://github.com/AzisabaNetwork/SpicyAzisaBan-API)  
+Created By [Acrylic Style](https://github.com/acrylic-style)

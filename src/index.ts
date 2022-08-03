@@ -1,10 +1,19 @@
-import express from 'express';
+require('dotenv').config()
+//  enable debug package
+if (!process.env.DEBUG) {
+    process.env.DEBUG = 'azisaba-commander-api:*'
+}
+import {app} from './app'
+import http from 'http'
 
-const API_PORT = parseInt(process.env.PORT || '3000', 10);
-const app = express();
+const debug = require('debug')('azisaba-commander-api:index')
 
-app.get('/', (_, res) => {
-    res.send('Hello world');
-});
+const port = parseInt(process.env.PORT || '3000', 10);
+app.set('port', port)
+const server = http.createServer(app)
 
-app.listen(API_PORT, () => console.log('Server is running'));
+//  start server
+process.once('ready', () => {
+    server.listen(port)
+    debug('listen at %d', port)
+})

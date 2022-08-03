@@ -1,6 +1,7 @@
 # azisaba-commander-api
 
-This is Rest-ful API for azisaba-commander-web.
+This is Rest-ful API for azisaba-commander-web.  
+You can figure out how to use this api, please visit [API Document](DOCUMENT.md).
 
 ## Install with docker-compose
 

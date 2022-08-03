@@ -42,44 +42,44 @@ GET https://api.commander.net/v1/me
 
 ## API Overview
 
-- [Account]()
-    - [Login]()
-    - [Logout]()
-    - [Register a user]()
-    - [Verify an account]()
-    - [Get own profile]()
-    - [Verify two-factor]()
-    - [Enable two-factor]()
-    - [Disable two-factor]()
-    - [Change password]()
+- [Account](#account)
+    - [Login](#login)
+    - [Logout](#logout)
+    - [Register a user](#register-a-user)
+    - [Verify an account](#verify-an-account)
+    - [Get own profile](#get-own-profile)
+    - [Verify two-factor](#verify-two-factor)
+    - [Enable two-factor](#enable-two-factor)
+    - [Disable two-factor](#disable-two-factor)
+    - [Change password](#change-password)
 
-- [Users]()
-    - [Get a list of user]()
-    - [Get a user profile]()
-    - [Delete a user]()
-    - [Get a list of permission(user has)]()
-    - [Add a permission]()
-    - [Remove a permission]()
-    - [Get a group]()
-    - [Set a group]()
+- [Users](#users)
+    - [Get a list of user](#get-a-list-of-user)
+    - [Get a user profile](#get-a-user-profile)
+    - [Delete a user](#delete-a-user)
+    - [Get a list of permission(user has)](#get-a-list-of-permissionuser-has)
+    - [Add a permission](#add-a-permission)
+    - [Remove a permission](#remove-a-permission)
+    - [Get a group](#get-a-group)
+    - [Set a group](#set-a-group)
 
-- [Permissions]()
-    - [Get a list of permission]()
-    - [Get a permission information]()
-    - [Create a permission]()
-    - [Delete a permission]()
-    - [Update a permission]()
+- [Permissions](#permissions)
+    - [Get a list of permission](#get-a-list-of-permissions)
+    - [Get a permission information](#get-a-permission)
+    - [Create a permission](#create-a-permission)
+    - [Delete a permission](#delete-a-permission)
+    - [Update a permission](#update-a-permission)
 
-- [Docker Containers]()
-    - [Get a list of container]()
-    - [Get a container information]()
-    - [Start a container]()
-    - [Stop a container]()
-    - [Restart a container]()
-    - [Get container logs]()
+- [Docker Containers](#docker-containers)
+    - [Get a list of container](#get-a-list-of-container)
+    - [Get a container information](#get-a-container-information)
+    - [Start a container](#start-a-container)
+    - [Stop a container](#stop-a-container)
+    - [Restart a container](#restart-a-container)
+    - [Get container logs](#get-container-logs)
 
-- [Logs]()
-    - [Get operation logs]()
+- [Logs](#logs)
+    - [Get operation logs](#get-operation-logs)
 
 ## Account
 
@@ -691,7 +691,7 @@ Status: 200
 
 ***
 
-### Get list of permissions
+### Get a list of permissions
 
 #### Endpoint
 

@@ -95,7 +95,7 @@ export const verify = async (userId: number, code: string, returnTrueIfSecretNot
         await sql.execute(
             "UPDATE `users_2fa_recovery` SET `used` = 1 WHERE `id` = ?",
             recoveryId.id
-            )
+        )
 
         return true
     }
@@ -116,7 +116,7 @@ export const verify = async (userId: number, code: string, returnTrueIfSecretNot
  * @return Boolean
  */
 export const disable = async (userId: number, code: string): Promise<boolean> => {
-    if (!await verify(userId, code))  return false
+    if (!await verify(userId, code)) return false
 
     //  delete secret
     await sql.execute(

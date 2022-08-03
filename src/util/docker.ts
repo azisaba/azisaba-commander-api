@@ -83,8 +83,7 @@ export const init = async () => {
  */
 const inspectDockerode = async (name: string, docker: Dockerode) => {
     try {
-        //  todo after debug, pls set 6000
-        await Promise.race([sleep(3000), docker.ping()]).then(result => {
+        await Promise.race([sleep(5000), docker.ping()]).then(result => {
             //  time-out
             if (!result) {
                 debug('Error: %s is timed out', name)
@@ -110,7 +109,9 @@ const inspectDockerode = async (name: string, docker: Dockerode) => {
  * @param name docker name
  * @return Docker|undefined
  */
-export const getDocker = (name: string): Docker | undefined => {return _nameDockerMap.get(name)}
+export const getDocker = (name: string): Docker | undefined => {
+    return _nameDockerMap.get(name)
+}
 
 /**
  * Get all container

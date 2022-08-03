@@ -8,7 +8,7 @@ const sessions: SessionTable = {}
 
 export const generateSecureRandomString = (lengthDividedBy2: number): Promise<string> => {
     return new Promise((resolve, reject) => {
-        crypto.randomBytes(lengthDividedBy2, function(err, buffer) {
+        crypto.randomBytes(lengthDividedBy2, function (err, buffer) {
             if (err) {
                 reject(err)
             } else {
@@ -37,7 +37,7 @@ export const putSession = async (session: Session): Promise<Session> => {
         session.user_id,
         session.ip,
         session.pending
-        )
+    )
     //  cache
     sessions[session.state] = {
         ...session,

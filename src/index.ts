@@ -3,8 +3,9 @@ require('dotenv').config()
 if (!process.env.DEBUG) {
     process.env.DEBUG = 'azisaba-commander-api:*'
 }
-import { app } from './app'
+import {app} from './app'
 import http from 'http'
+
 const debug = require('debug')('azisaba-commander-api:index')
 
 const port = parseInt(process.env.PORT || '3000', 10);

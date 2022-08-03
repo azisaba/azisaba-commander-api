@@ -1,10 +1,11 @@
 import Docker from 'dockerode'
+
 const debug = require('debug')('azisaba-commander-api:docker_handler')
 
 const _nodes = new Array<Docker>()
 const _container_statuses = new Map<string, ContainerStatus>()
 
-export const init = (nodes: Array<Docker> ,interval: number = 5000) => {
+export const init = (nodes: Array<Docker>, interval: number = 5000) => {
     //  containing
     for (const node of nodes) {
         _nodes.push(node)
@@ -18,7 +19,7 @@ const statusHandler = async () => {
     for (const node of _nodes) {
         const containers = await node.listContainers()
         for (const container of containers) {
-            const stats = await node.getContainer(container.Id).stats({ stream: false });
+            const stats = await node.getContainer(container.Id).stats({stream: false});
             const inspection = await node.getContainer(container.Id).inspect()
 
             //  null check

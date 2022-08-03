@@ -36,20 +36,20 @@ router.post('/', protect(async (req, res) => {
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  get user
     const user = await sql.findOne('SELECT `id`, `password`, `group` FROM users WHERE `username`=? LIMIT 1', username)
-    if (!user) return res.status(400).send({ error : 'invalid_username_or_password' })
+    if (!user) return res.status(400).send({error: 'invalid_username_or_password'})
 
     //  check if user has already verified
     if (user.group === UNDER_REVIEW_TAG) {
-        return res.status(400).send({ error : 'incomplete_user'})
+        return res.status(400).send({error: 'incomplete_user'})
     }
     //  password
-    if (!await crypto.compare(password, user.password) ){
-        return res.status(400).send({ error : 'invalid_username_or_password' })
+    if (!await crypto.compare(password, user.password)) {
+        return res.status(400).send({error: 'invalid_username_or_password'})
     }
 
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
-        if (!state) return res.status(408).send({ error: 'timed_out' })
+        if (!state) return res.status(408).send({error: 'timed_out'})
         const registeredTwoFA = await twoFA.isRegistered(user.id)
         //  put
         await putSession({

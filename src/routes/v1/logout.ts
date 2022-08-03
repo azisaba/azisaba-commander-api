@@ -18,5 +18,5 @@ export const router = express.Router();
 router.post('/', protect(async (req, res) => {
     const key = getSessionKey(req)
     if (key) await deleteSession(key)
-    return res.status(200).send({ message: 'logged-out' })
+    return res.status(200).send({message: 'logged-out'})
 }))

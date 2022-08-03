@@ -129,7 +129,7 @@ const parseContent = (content: string): Array<PermissionContent> => {
  * @return string
  */
 const formatContent = (contents: Array<PermissionContent>): string => {
-    let contentsStr= ""
+    let contentsStr = ""
     for (const content of contents) {
         contentsStr += content.project + ":" + content.service + "|"
     }

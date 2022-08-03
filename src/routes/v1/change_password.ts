@@ -22,10 +22,10 @@ export const router = express.Router();
  */
 router.post('/', protect(async (req, res) => {
     let session = await validateAndGetSession(req)
-    if (!session) return res.status(401).send({ error : "unauthorized" })
+    if (!session) return res.status(401).send({error: "unauthorized"})
 
     //  check param
-    if (!req.body || typeof req.body !== 'object'){
+    if (!req.body || typeof req.body !== 'object') {
         return res.status(400).send({error: "invalid_params"})
     }
     console.log(req.body)
@@ -39,7 +39,7 @@ router.post('/', protect(async (req, res) => {
     }
     const twoFARegistered = await twoFA.isRegistered(session.user_id);
     if (twoFARegistered && !twoFaCode) {
-        return res.status(400).send({ error: "invalid_2fa_code" })
+        return res.status(400).send({error: "invalid_2fa_code"})
     }
 
     const user = await sql.findOne(
@@ -47,20 +47,20 @@ router.post('/', protect(async (req, res) => {
         session.user_id
     )
     if (!user) {
-        return res.status(404).send({ error: "user_not_found" })
+        return res.status(404).send({error: "user_not_found"})
     }
 
     //  password
-    if (!await crypto.compare(oldPassword, user.password) ){
-        return res.status(400).send({ error : 'invalid_password_or_2fa_code' })
+    if (!await crypto.compare(oldPassword, user.password)) {
+        return res.status(400).send({error: 'invalid_password_or_2fa_code'})
     }
     //  2fa
     if (!await twoFA.verify(session.user_id, twoFaCode)) {
-        return res.status(400).send({ error : "invalid_password_or_2fa_code"})
+        return res.status(400).send({error: "invalid_password_or_2fa_code"})
     }
 
     //  set new password
     await userUtil.changePassword(session.user_id, newPassword)
 
-    return res.status(200).send({ message: "ok" })
+    return res.status(200).send({message: "ok"})
 }))

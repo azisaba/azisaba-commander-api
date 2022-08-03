@@ -39,7 +39,7 @@ app.use(cors(corsOptions));
 
 //  json, url encoder
 app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({extended: false}))
 app.use(cookieParser())
 
 //  404, 500
@@ -48,7 +48,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
     res.status(404).send({ error: 'not_found' })
 })
  */
-app.use((err: Error, req:express.Request, res: express.Response, next: express.NextFunction) =>  {
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     debug("an unexpected error occurred: ", err.stack);
     res.status(500).send('Something broke!');
 });
@@ -58,7 +58,7 @@ let apiRequests: { [ip: string]: number } = {}
 app.use('/api', (req, res, next) => {
     const limit = 1000
     const ip = getIP(req)
-    if (apiRequests[ip] >= limit) return res.status(429).send({ error: 'too_many_requests' })
+    if (apiRequests[ip] >= limit) return res.status(429).send({error: 'too_many_requests'})
     apiRequests[ip] = (apiRequests[ip] || 0) + 1
     next()
 })

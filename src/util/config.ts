@@ -1,4 +1,5 @@
 import fs from 'fs'
+
 const debug = require('debug')('azisaba-commander-api:config')
 
 const CONFIG_PATH = process.env.CONFIG_PATH

@@ -21,10 +21,10 @@ export const router = express.Router();
 router.get('/', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
     //  get all user
     const users = await userUtil.getAllUser()
@@ -46,22 +46,22 @@ router.get('/', protect(async (req, res) => {
 router.get('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     //  permission check
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
     //  param check
     const id = +req.params.id
     if (!id) {
-        return res.status(400).send({ "error": "invalid_params"})
+        return res.status(400).send({"error": "invalid_params"})
     }
 
     const user = await userUtil.getUser(id)
 
     if (!user) {
-        return res.status(404).send({ "error": "not_found"})
+        return res.status(404).send({"error": "not_found"})
     }
 
     return res.status(200).send(user)
@@ -77,33 +77,33 @@ router.get('/:id', protect(async (req, res) => {
 router.delete('/:id', protect(async (req, res) => {
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
     //  param check
     const id = +req.params.id
     if (!id) {
-        return res.status(400).send({ "error": "invalid_params"})
+        return res.status(400).send({"error": "invalid_params"})
     }
 
     //  check if user exists
     if (!await userUtil.existUser(id)) {
-        return res.status(404).send({ "error": "not_found" })
+        return res.status(404).send({"error": "not_found"})
     }
 
     //  delete
     await userUtil.deleteUser(id)
 
     if (await userUtil.existUser(id)) {
-        return res.status(500).send({ "error": "something went wrong" })
+        return res.status(500).send({"error": "something went wrong"})
     }
 
     //  log
     await commit(session.user_id, `delete ${id}'s profile`)
 
-    return res.status(200).send({ "message": "ok" })
+    return res.status(200).send({"message": "ok"})
 }))
 
 //  Permission

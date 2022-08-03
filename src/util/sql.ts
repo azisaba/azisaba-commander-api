@@ -93,7 +93,6 @@ export const findOneWithConnection = async (connection: Connection, sql: string,
 export const findAll = (sql: string, ...values: Array<any>): Promise<Array<any>> => query(sql, ...values).then(value => value.results)
 
 export const init = async () => {
-    //  TODO create table sql
     query('SELECT 1').then(async () => {
         debug('Connection is established')
 
@@ -156,7 +155,7 @@ export const init = async () => {
                                (
                                    \`id\`      int auto_increment,
                                    \`name\`    varchar(255) not null,
-                                   \`content\` text not null,
+                                   \`content\` text         not null,
                                    constraint permissions_pk
                                        primary key (\`id\`)
                                )`)
@@ -188,10 +187,10 @@ export const init = async () => {
                 debug('Creating logs table')
                 await execute(`create table logs
                                (
-                                   \`id\`       int auto_increment,
-                                   \`user_id\`  int null,
-                                   \`message\`  TEXT null,
-                                   \`date\`     DATETIME default CURRENT_TIMESTAMP null,
+                                   \`id\`      int auto_increment,
+                                   \`user_id\` int                                null,
+                                   \`message\` TEXT                               null,
+                                   \`date\`    DATETIME default CURRENT_TIMESTAMP null,
                                    constraint logs_pk
                                        primary key (\`id\`)
                                )`)

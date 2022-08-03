@@ -21,21 +21,21 @@ router.get('/', protect(async (req, res) => {
     //  session
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     //  permission check
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
     //  param check
     if (!userId) {
-        return res.status(400).send({ "error": "invalid_params"})
+        return res.status(400).send({"error": "invalid_params"})
     }
 
     //  get all permission
     const permissions = await userUtil.getAllPermission(userId)
     if (!permissions) {
-        return res.status(404).send({ "error": "not_found" })
+        return res.status(404).send({"error": "not_found"})
     }
 
     return res.status(200).send(
@@ -62,29 +62,29 @@ router.post('/:permission_id', protect(async (req, res) => {
     //  session
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     //  param check
     if (!userId || !permissionId) {
-        return res.status(400).send({ "error": "invalid_params"})
+        return res.status(400).send({"error": "invalid_params"})
     }
     //  permission check
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
 
     //  user exist
     if (!await userUtil.existUser(userId)) {
-        return res.status(400).send({ "error": "invalid_user" })
+        return res.status(400).send({"error": "invalid_user"})
     }
     //  permission exist
     if (!await permissionUtil.exist(+permissionId)) {
-        return res.status(400).send({ "error": "invalid_permission" })
+        return res.status(400).send({"error": "invalid_permission"})
     }
 
     //  check if user has permission
     if (await userUtil.hasPermission(userId, +permissionId)) {
-        return res.status(400).send({ "error": "user_already_has" })
+        return res.status(400).send({"error": "user_already_has"})
     }
 
     //  add permission
@@ -92,13 +92,13 @@ router.post('/:permission_id', protect(async (req, res) => {
 
     //  check if user has permission
     if (!await userUtil.hasPermission(userId, +permissionId)) {
-        return res.status(500).send({ "error": "something went wrong" })
+        return res.status(500).send({"error": "something went wrong"})
     }
 
     //  log
     await commit(session.user_id, `give permission ${permissionId} to ${userId}`)
 
-    return res.status(200).send({ "message": "ok" })
+    return res.status(200).send({"message": "ok"})
 }))
 
 /**
@@ -116,25 +116,25 @@ router.delete('/:permission_id', protect(async (req, res) => {
     //  session
     const session = await validateAndGetSession(req)
     if (!session) {
-        return res.status(401).send({ "error": "not_authorized"})
+        return res.status(401).send({"error": "not_authorized"})
     }
     //  param check
     if (!userId || !permissionId) {
-        return res.status(400).send({ "error": "invalid_params"})
+        return res.status(400).send({"error": "invalid_params"})
     }
     //  permission check
     if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({ "error": "forbidden" })
+        return res.status(403).send({"error": "forbidden"})
     }
 
     //  user exist
     if (!await userUtil.existUser(userId)) {
-        return res.status(400).send({ "error": "invalid_user" })
+        return res.status(400).send({"error": "invalid_user"})
     }
 
     //  check if user has permission
     if (!await userUtil.hasPermission(userId, +permissionId)) {
-        return res.status(404).send({ "error": "user_not_has" })
+        return res.status(404).send({"error": "user_not_has"})
     }
 
     //  add permission
@@ -142,11 +142,11 @@ router.delete('/:permission_id', protect(async (req, res) => {
 
     //  check if user has permission
     if (await userUtil.hasPermission(userId, +permissionId)) {
-        return res.status(500).send({ "error": "something went wrong" })
+        return res.status(500).send({"error": "something went wrong"})
     }
 
     //  log
     await commit(session.user_id, `remove permission ${permissionId} from ${userId}`)
 
-    return res.status(200).send({ "message": "ok" })
+    return res.status(200).send({"message": "ok"})
 }))

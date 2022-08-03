@@ -36,14 +36,8 @@ router.post('/', protect(async (req, res) => {
     //  check null, length
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  check if user or ip already exists
-    /*
     if (await sql.findOne('SELECT `id` FROM users WHERE `username`=? OR `ip`=?', username, getIP(req))) {
-        return res.status(400).send({ error: 'dupe_user' })
-    }
-    */
-    //  todo remove this
-    if (await sql.findOne('SELECT `id` FROM users WHERE `username`=?', username)) {
-        return res.status(400).send({ error: 'dupe_user' })
+        return res.status(400).send({error: 'dupe_user'})
     }
 
     //  insert
@@ -53,11 +47,11 @@ router.post('/', protect(async (req, res) => {
         await crypto.hash(password),
         UNDER_REVIEW_TAG,
         getIP(req)
-    )   as number
+    ) as number
 
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
-        if (!state) return res.status(408).send({ error: 'timed_out' })
+        if (!state) return res.status(408).send({error: 'timed_out'})
         //  put
         await putSession({
             state,
@@ -72,7 +66,7 @@ router.post('/', protect(async (req, res) => {
         await commit(user_id, `New user requested review. user:${username} url:${url}`)
 
         //  done
-        res.status(200).send({ message: 'ok' })
+        res.status(200).send({message: 'ok'})
     });
 }))
 
@@ -87,14 +81,14 @@ router.post('/', protect(async (req, res) => {
  */
 router.get('/:id', protect(async (req, res) => {
     const session = await getSession(String(req.params.id))
-    if (!session || session.pending !== SessionStatus.UNDER_REVIEW) return res.status(403).send({ error: 'forbidden' })
+    if (!session || session.pending !== SessionStatus.UNDER_REVIEW) return res.status(403).send({error: 'forbidden'})
     //  check group
     const user = await sql.findOne('SELECT `group`, `username` FROM `users` WHERE `id`=?', session.user_id)
-    if (!user) return res.status(400).send({ error : 'forbidden' })
-    if (user.group !== UNDER_REVIEW_TAG) return res.status(400).send({ error : 'dupe_user' })
+    if (!user) return res.status(400).send({error: 'forbidden'})
+    if (user.group !== UNDER_REVIEW_TAG) return res.status(400).send({error: 'dupe_user'})
 
     //  ip  check
-    if (session.ip !== getIP(req)) return res.status(403).send({ error: 'forbidden' })
+    if (session.ip !== getIP(req)) return res.status(403).send({error: 'forbidden'})
 
     //  accept request
     const result = await sql.query(
@@ -102,11 +96,11 @@ router.get('/:id', protect(async (req, res) => {
         GROUP_USER,
         session.user_id
     )
-    if (!result) return res.status(404).send( { error: 'not_found' })
+    if (!result) return res.status(404).send({error: 'not_found'})
     //  session
     const verified = await verifyUnfinishedSession(session.state)
-    if (!verified) return res.status(404).send({ error: 'not_found' })
-    if (verified.ip === '') return res.status(404).send({ error: 'not_found' })
+    if (!verified) return res.status(404).send({error: 'not_found'})
+    if (verified.ip === '') return res.status(404).send({error: 'not_found'})
 
     //  commit
     await commit(session.user_id, `${user.username} has been verified.`)

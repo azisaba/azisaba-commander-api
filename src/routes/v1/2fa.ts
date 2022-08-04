@@ -1,5 +1,12 @@
 import express from "express";
-import {deleteSession, getSession, getSessionKey, protect, putSession, validateAndGetSession} from "../../util/util";
+import {
+    authorized,
+    deleteSession,
+    getSession,
+    getSessionKey,
+    protect,
+    putSession
+} from "../../util/util";
 import * as twoFA from "../../util/2fa";
 import {SessionStatus} from "../../util/constants";
 
@@ -60,10 +67,7 @@ router.get('/', protect(async (req, res) => {
  *  - recovery: string[]
  * - 4xx: failed
  */
-router.post('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) return res.status(401).send({error: "unauthorized"})
-
+router.post('/', authorized(async (req, res, session) => {
     //  enable 2fa
     const content = await twoFA.register(session.user_id)
     if (!content) {
@@ -87,9 +91,7 @@ router.post('/', protect(async (req, res) => {
  * - 200: success
  * - 4xx: failed
  */
-router.delete('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) return res.status(401).send({error: "unauthorized"})
+router.delete('/', authorized(async (req, res, session) => {
     //  check parameter
     if (!req.body || !req.body['code']) return res.status(400).send({error: "invalid_param"})
     const code = req.body['code']

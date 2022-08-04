@@ -2,6 +2,7 @@ import express from "express"
 import crypto from 'crypto'
 import * as sql from "./sql";
 import {SessionStatus} from "./constants";
+import * as userUtil from "./users";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -139,9 +140,40 @@ export const validateAndGetSession = async (req: express.Request): Promise<Sessi
 }
 
 //  @ts-ignore
-export const protect = (fn: (req, res, next) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const protect = (fn: (req, res) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
-        await fn(req, res, next)
+        await fn(req, res)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorized = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+
+        await fn(req, res, session)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorizedAdmin = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+        if (!await userUtil.isAdmin(session.user_id)) {
+            return res.status(403).send({"error": "forbidden"})
+        }
+
+        await fn(req, res, session)
     } catch (e) {
         next(e)
     }

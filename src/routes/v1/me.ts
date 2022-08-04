@@ -1,5 +1,5 @@
 import express from "express";
-import {protect, validateAndGetSession} from "../../util/util";
+import {authorized} from "../../util/util";
 import * as sql from "../../util/sql";
 import * as userUtil from "../../util/users";
 import * as twoFA from "../../util/2fa";
@@ -14,9 +14,7 @@ export const router = express.Router();
  * Request:
  * - state: string
  */
-router.get('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) return res.status(401).send({error: 'unauthorized'})
+router.get('/', authorized(async (req, res, session) => {
     const user = await sql.findOne("SELECT `id`, `username`, `group`, `last_update` FROM `users` WHERE `id` = ?", session.user_id)
     if (!user) return res.status(401).send({error: 'unauthorized'})
 

@@ -1,5 +1,5 @@
 import express from "express";
-import {protect, validateAndGetSession} from "../../util/util";
+import {authorized} from "../../util/util";
 import * as twoFA from "../../util/2fa";
 import * as userUtil from "../../util/users";
 import * as crypto from "../../util/crypto";
@@ -20,10 +20,7 @@ export const router = express.Router();
  * - 200: success
  * - 4xx: failed
  */
-router.post('/', protect(async (req, res) => {
-    let session = await validateAndGetSession(req)
-    if (!session) return res.status(401).send({error: "unauthorized"})
-
+router.post('/', authorized(async (req, res, session) => {
     //  check param
     if (!req.body || typeof req.body !== 'object') {
         return res.status(400).send({error: "invalid_params"})

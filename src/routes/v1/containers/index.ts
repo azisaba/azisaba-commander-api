@@ -1,7 +1,7 @@
 import express from "express"
 import * as userUtil from "../../../util/users"
 import * as docker from "../../../util/docker"
-import {protect, validateAndGetSession} from "../../../util/util"
+import {authorized} from "../../../util/util"
 import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:container:index')
@@ -11,11 +11,7 @@ export const router = express.Router();
 /**
  * Get all container
  */
-router.get('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.get('/', authorized(async (req, res, session) => {
 
     const containers = await docker.getAllContainer()
     let filteredContainers: Container[]
@@ -42,11 +38,7 @@ router.get('/', protect(async (req, res) => {
 /**
  * Get a container
  */
-router.get('/:nodeId/:containerId', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.get('/:nodeId/:containerId', authorized(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -66,11 +58,7 @@ router.get('/:nodeId/:containerId', protect(async (req, res) => {
 /**
  * Start a container
  */
-router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.post('/:nodeId/:containerId/start', authorized(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -101,11 +89,7 @@ router.post('/:nodeId/:containerId/start', protect(async (req, res) => {
 /**
  * Stop a container
  */
-router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.post('/:nodeId/:containerId/stop', authorized(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -135,11 +119,7 @@ router.post('/:nodeId/:containerId/stop', protect(async (req, res) => {
 /**
  * Restart a container
  */
-router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.post('/:nodeId/:containerId/restart', authorized(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -169,11 +149,7 @@ router.post('/:nodeId/:containerId/restart', protect(async (req, res) => {
 /**
  * Get a container logs
  */
-router.get('/:nodeId/:containerId/logs', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
+router.get('/:nodeId/:containerId/logs', authorized(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }

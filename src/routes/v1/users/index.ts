@@ -2,7 +2,7 @@ import express from "express"
 import {router as permissionsRouter} from "./permissions"
 import {router as groupRouter} from "./group"
 import * as userUtil from "../../../util/users"
-import {protect, validateAndGetSession} from "../../../util/util"
+import {authorizedAdmin} from "../../../util/util"
 import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:users:index')
@@ -18,14 +18,7 @@ export const router = express.Router();
  * Response:
  *
  */
-router.get('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.get('/', authorizedAdmin(async (req, res) => {
     //  get all user
     const users = await userUtil.getAllUser()
     return res.status(200).send(
@@ -43,15 +36,7 @@ router.get('/', protect(async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.get('/:id', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.get('/:id', authorizedAdmin(async (req, res) => {
     //  param check
     const id = +req.params.id
     if (!id) {
@@ -74,14 +59,7 @@ router.get('/:id', protect(async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.delete('/:id', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.delete('/:id', authorizedAdmin(async (req, res, session) => {
     //  param check
     const id = +req.params.id
     if (!id) {

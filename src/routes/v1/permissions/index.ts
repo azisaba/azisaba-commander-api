@@ -1,7 +1,6 @@
 import express from "express"
-import * as userUtil from "../../../util/users"
 import * as permissionUtil from "../../../util/permission"
-import {protect, validateAndGetSession} from "../../../util/util"
+import {authorizedAdmin} from "../../../util/util"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:permissions:index')
 
@@ -11,14 +10,7 @@ export const router = express.Router();
  * Get all permission
  * Require: Admin
  */
-router.get('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.get('/', authorizedAdmin(async (req, res) => {
     //  get all permission
     const permissions = await permissionUtil.getAll()
 
@@ -37,14 +29,7 @@ router.get('/', protect(async (req, res) => {
  * Parameter:
  * - id: permission id
  */
-router.get('/:id', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.get('/:id', authorizedAdmin(async (req, res) => {
     if (!req.params.id) {
         return res.status(400).send({"error": "invalid_param"})
     }
@@ -74,14 +59,7 @@ router.get('/:id', protect(async (req, res) => {
  *     - service: string
  * }
  */
-router.post('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.post('/', authorizedAdmin(async (req, res) => {
     //  param check
     if (!req.body || !req.body.name || !req.body.content) {
         return res.status(400).send({error: 'invalid_param'})
@@ -118,14 +96,7 @@ router.post('/', protect(async (req, res) => {
  *     - service: string
  * }
  */
-router.patch('/', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.patch('/', authorizedAdmin(async (req, res) => {
     //  param check
     if (!req.body || !req.body.id || !req.body.name || !req.body.content) {
         return res.status(400).send({error: 'invalid_param'})
@@ -159,14 +130,7 @@ router.patch('/', protect(async (req, res) => {
  * - id: number
  * }
  */
-router.delete('/:id', protect(async (req, res) => {
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+router.delete('/:id', authorizedAdmin(async (req, res) => {
     //  param check
     if (!req.params || !req.params.id) {
         return res.status(400).send({error: 'invalid_param'})

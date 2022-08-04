@@ -1,6 +1,6 @@
 {
   "name": "azisaba-commander-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "azisaba commander's rest-ful api",
   "main": "index.js",
   "repository": "https://github.com/testusuke/azisaba-commander-api.git",

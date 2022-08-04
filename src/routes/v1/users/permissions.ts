@@ -1,5 +1,5 @@
 import express from "express"
-import {protect, validateAndGetSession} from "../../../util/util";
+import {authorizedAdmin} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import * as permissionUtil from "../../../util/permission";
 import {commit} from "../../../util/logs";
@@ -15,18 +15,9 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', protect(async (req, res) => {
+router.get('/', authorizedAdmin(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
     //  param check
     if (!userId) {
         return res.status(400).send({"error": "invalid_params"})
@@ -55,24 +46,14 @@ router.get('/', protect(async (req, res) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.post('/:permission_id', protect(async (req, res) => {
+router.post('/:permission_id', authorizedAdmin(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
     //  param check
     if (!userId || !permissionId) {
         return res.status(400).send({"error": "invalid_params"})
     }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
-
     //  user exist
     if (!await userUtil.existUser(userId)) {
         return res.status(400).send({"error": "invalid_user"})
@@ -109,22 +90,13 @@ router.post('/:permission_id', protect(async (req, res) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.delete('/:permission_id', protect(async (req, res) => {
+router.delete('/:permission_id', authorizedAdmin(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
     //  param check
     if (!userId || !permissionId) {
         return res.status(400).send({"error": "invalid_params"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
     }
 
     //  user exist

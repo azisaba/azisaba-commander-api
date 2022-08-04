@@ -1,6 +1,5 @@
 import express from "express";
-import {protect, validateAndGetSession} from "../../util/util";
-import * as userUtil from "../../util/users";
+import {authorizedAdmin} from "../../util/util";
 import * as logsUtil from "../../util/logs"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:logs')
@@ -12,17 +11,7 @@ export const router = express.Router();
  *
  * Require: Admin
  */
-router.get('/', protect(async (req, res) => {
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
-
+router.get('/', authorizedAdmin(async (req, res) => {
     const option: LogGetterOption = {
         userId: +req.query.userId,
         limit: +req.query.limit

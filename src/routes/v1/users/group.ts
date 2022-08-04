@@ -1,5 +1,5 @@
 import express from "express";
-import {protect, validateAndGetSession} from "../../../util/util";
+import {authorizedAdmin} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import {commit} from "../../../util/logs";
 
@@ -12,18 +12,9 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', protect(async (req, res) => {
+router.get('/', authorizedAdmin(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
 
     const user = await userUtil.getUser(userId);
     //  user exist
@@ -47,18 +38,10 @@ router.get('/', protect(async (req, res) => {
  * Body:
  * - group: group name
  */
-router.post('/', protect(async (req, res) => {
+router.post('/', authorizedAdmin(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
-    //  session
-    const session = await validateAndGetSession(req)
-    if (!session) {
-        return res.status(401).send({"error": "not_authorized"})
-    }
-    //  permission check
-    if (!await userUtil.isAdmin(session.user_id)) {
-        return res.status(403).send({"error": "forbidden"})
-    }
+
     //  params
     if (!userId || !req.body || !req.body.group) {
         return res.status(400).send({"error": "invalid_parameter"})

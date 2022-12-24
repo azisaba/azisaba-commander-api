@@ -32,6 +32,7 @@ router.post('/', protect(async (req, res) => {
     if (!req.body || typeof req.body !== 'object') return res.status(400).send({error: 'invalid_params'})
     const username = req.body['username']
     const password = req.body['password']
+    const twoFAToken = req.body['2fa_token']
     //  check null, length
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  get user
@@ -47,17 +48,25 @@ router.post('/', protect(async (req, res) => {
         return res.status(400).send({error: 'invalid_username_or_password'})
     }
 
+    //  2FA check if user need to verify 2fa
+    if(await twoFA.isRegistered(user.id) && !twoFAToken) {
+        return res.status(400).send({error: 'invalid_2fa_token'})
+    }
+    //  2FA verify
+    if (!await twoFA.verify(user.id, twoFAToken, true)) {
+        return res.status(400).send({error: 'invalid_2fa_token'})
+    }
+
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
         if (!state) return res.status(408).send({error: 'timed_out'})
-        const registeredTwoFA = await twoFA.isRegistered(user.id)
         //  put
         await putSession({
             state,
             expires_at: Date.now() + SESSION_LENGTH,
             user_id: user.id,
             ip: getIP(req),
-            pending: registeredTwoFA ? SessionStatus.WAIT_2FA : SessionStatus.AUTHORIZED
+            pending: SessionStatus.AUTHORIZED
         })
         //  cookie
         res.cookie("azisabacommander_session", state)
@@ -65,8 +74,7 @@ router.post('/', protect(async (req, res) => {
         //  done
         res.status(200).send({
             state: state,
-            message: 'logged_in',
-            wait_2fa: registeredTwoFA
+            message: 'logged_in'
         })
     });
 }))

@@ -24,17 +24,20 @@ export const sleep = async (time: number): Promise<void> => {
     await new Promise((res) => setTimeout(res, time));
 }
 
+const convertIPv4 = (ip: string): string | undefined => {
+    const result =  ip.match( /^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$/)
+    if(!result) {
+        return undefined
+    }
+
+    console.log(result[0])
+    return result[0] as string
+}
+
 export const getIP = (req: express.Request) => {
-    const client = req.headers['client-side-ip']
-    if (client) return client as string
-    //
-    // console.log("cf ip")
-    // const cf = req.headers['cf-connecting-ip']
-    // if (cf) return cf as string
-    //
-    // console.log("req ip")
-    // return req.ip
-    return requestIp.getClientIp(req) ?? req.ip
+    const client = convertIPv4(req.headers['client-side-ip'] as string)
+    if (client) return client
+    return convertIPv4(requestIp.getClientIp(req) as string) ?? req.ip
 }
 
 export const putSession = async (session: Session): Promise<Session> => {

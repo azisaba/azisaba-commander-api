@@ -25,9 +25,8 @@ export const sleep = async (time: number): Promise<void> => {
 }
 
 export const getIP = (req: express.Request) => {
-    // console.log("client-side ip")
-    // const client = req.headers['client-side-ip']
-    // if (client) return client as string
+    const client = req.headers['client-side-ip']
+    if (client) return client as string
     //
     // console.log("cf ip")
     // const cf = req.headers['cf-connecting-ip']

@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import * as sql from "./sql";
 import {SessionStatus} from "./constants";
 import * as userUtil from "./users";
+import requestIp from "request-ip";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -24,16 +25,17 @@ export const sleep = async (time: number): Promise<void> => {
 }
 
 export const getIP = (req: express.Request) => {
-    console.log("client-side ip")
-    const client = req.headers['client-side-ip']
-    if (client) return client as string
-
-    console.log("cf ip")
-    const cf = req.headers['cf-connecting-ip']
-    if (cf) return cf as string
-
-    console.log("req ip")
-    return req.ip
+    // console.log("client-side ip")
+    // const client = req.headers['client-side-ip']
+    // if (client) return client as string
+    //
+    // console.log("cf ip")
+    // const cf = req.headers['cf-connecting-ip']
+    // if (cf) return cf as string
+    //
+    // console.log("req ip")
+    // return req.ip
+    return requestIp.getClientIp(req) ?? req.ip
 }
 
 export const putSession = async (session: Session): Promise<Session> => {

@@ -25,7 +25,10 @@ export const sleep = async (time: number): Promise<void> => {
 }
 
 const convertIPv4 = (ip: string): string | undefined => {
+    console.log(ip)
     const result =  ip.match( "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$")
+    console.log(result)
+
     if(!result) {
         return undefined
     }

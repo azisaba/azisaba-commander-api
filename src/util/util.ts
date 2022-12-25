@@ -24,6 +24,8 @@ export const sleep = async (time: number): Promise<void> => {
 }
 
 export const getIP = (req: express.Request) => {
+    const client = req.headers['client-side-ip']
+    if (client) return client as string
     const cf = req.headers['cf-connecting-ip']
     if (cf) return cf as string
     return req.ip
@@ -127,15 +129,35 @@ export const getSessionKey = (request: express.Request): string | null => {
  * @return session | null
  */
 export const validateAndGetSession = async (req: express.Request): Promise<Session | null> => {
+    console.log("in process")
+
     const session = getSessionKey(req)
+
+    console.log(session)
+
     if (!session) return null
+
+    console.log("1")
+
     const token = await getSession(session)
+
+    console.log("2")
+
     // reject if:
     // - no session
     // - expired session
     // - pending registration
     if (!session || !token || token.pending !== SessionStatus.AUTHORIZED || token.expires_at <= Date.now()) return null
+
+    console.log("3")
+
+    console.log("token: ", token.ip)
+    console.log("ip: ", getIP(req))
+
     if (token.ip !== getIP(req)) return null // reject if ip address does not match
+
+    console.log("4")
+
     return token
 }
 

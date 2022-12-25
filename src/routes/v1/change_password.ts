@@ -25,7 +25,6 @@ router.post('/', authorized(async (req, res, session) => {
     if (!req.body || typeof req.body !== 'object') {
         return res.status(400).send({error: "invalid_params"})
     }
-    console.log(req.body)
 
     const oldPassword = req.body['old']
     const newPassword = req.body['new']

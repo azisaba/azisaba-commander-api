@@ -37,7 +37,7 @@ router.post('/', protect(async (req, res) => {
     if (!username || !password || password.length < 7) return res.status(400).send({error: 'invalid_username_or_password'})
     //  check if user or ip already exists
     if (await sql.findOne('SELECT `id` FROM users WHERE `username`=? OR `ip`=?', username, getIP(req))) {
-        return res.status(400).send({error: 'dupe_user'})
+        return res.status(403).send({error: 'forbidden'})
     }
 
     //  insert
@@ -61,7 +61,7 @@ router.post('/', protect(async (req, res) => {
             pending: SessionStatus.UNDER_REVIEW
         })
         //  log
-        const url = `${process.env.APP_URL}/register?state=${state}`
+        const url = `${process.env.APP_URL}/auth/register?state=${state}`
         debug(`New user requested review. user:${username} url:${url}`)
         await commit(user_id, `New user requested review. user:${username} url:${url}`)
 

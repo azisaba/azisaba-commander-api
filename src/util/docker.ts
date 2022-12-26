@@ -267,9 +267,8 @@ export const restartContainer = async (nodeId: string, containerId: string): Pro
  *
  * @param nodeId docker node id
  * @param containerId container id
- * @param since UNIX timestamp
  */
-export const getLogs = async (nodeId: string, containerId: string, since: number = 0): Promise<ContainerLogs | undefined> => {
+export const getLogs = async (nodeId: string, containerId: string): Promise<ContainerLogs | undefined> => {
     const node = Array.from(_nameDockerMap.values()).find(async value => {
         const info = await value.info()
         return info.ID === nodeId
@@ -288,7 +287,7 @@ export const getLogs = async (nodeId: string, containerId: string, since: number
         follow: false,
         stdout: true,
         stderr: true,
-        since: +since
+        tail: 1000
     })
 
     if (!Buffer.isBuffer(logs)) {

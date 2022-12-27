@@ -231,7 +231,7 @@ export const getLogs = async (nodeId: string, containerId: string): Promise<Cont
 
     const container = node.getContainer(containerId)
     //  check if container exists
-    const inspection = await container.inspect();
+    const inspection = await container.inspect().catch(() => undefined);
     if (!inspection) {
         return undefined
     }

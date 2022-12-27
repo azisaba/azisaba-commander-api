@@ -14,7 +14,13 @@ export const router = express.Router();
 router.get('/', authorized(async (req, res, session) => {
 
     const containers = await docker.getAllContainer()
-    const filteredContainers = containers.filter(async value => await checkContainerPermission(session.user_id, value))
+    let filteredContainers: Array<Container> = []
+    for (const container of containers) {
+        if(await checkContainerPermission(session.user_id, container)) {
+            filteredContainers.push(container)
+            console.log("Pass ", container.name)
+        }
+    }
 
     return res.status(200).send({
         containers: filteredContainers

@@ -159,7 +159,18 @@ router.get('/:nodeId/:containerId/logs', authorized(async (req, res, session) =>
         container.id
     )
 
-    return res.status(200).send(logs)
+    if (!logs)
+    {
+        return res.status(200).send(
+            {
+                message: "Console is not updated yet."
+            }
+        )
+    }
+    
+    return res.status(200).send(
+        logs
+    )
 }))
 
 /**

@@ -160,11 +160,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
  * @return Promise<boolean> if process is succeed, return true
  */
 export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
-
+    const node = await getNode(nodeId)
     if (!node) {
         return false
     }
@@ -191,11 +187,7 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
  * @return Promise<boolean> if process is succeed, return true
  */
 export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
-
+    const node = await getNode(nodeId)
     if (!node) {
         return false
     }
@@ -232,16 +224,14 @@ export const restartContainer = async (nodeId: string, containerId: string): Pro
  * @param containerId container id
  */
 export const getLogs = async (nodeId: string, containerId: string): Promise<ContainerLogs | undefined> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
+    const node = await getNode(nodeId)
     if (!node) {
         return undefined
     }
+
     const container = node.getContainer(containerId)
     //  check if container exists
-    const inspection = await container.inspect().catch(() => undefined);
+    const inspection = await container.inspect();
     if (!inspection) {
         return undefined
     }
@@ -261,4 +251,14 @@ export const getLogs = async (nodeId: string, containerId: string): Promise<Cont
         read_at: new Date().getDate(),
         logs: logs.toString("utf-8")
     }
+}
+
+const getNode = async (nodeId: string): Promise<Docker | undefined> => {
+    for (const value of Array.from(_nameDockerMap.values())) {
+        const info = await value.info()
+        if (info.ID == nodeId) {
+            return value
+        }
+    }
+    return undefined
 }

@@ -17,7 +17,7 @@ export const init = (nodes: Array<Docker>, interval: number = 5000) => {
 
 const statusHandler = async () => {
     for (const node of _nodes) {
-        const containers = await node.listContainers()
+        const containers = await node.listContainers({all: true})
         for (const container of containers) {
             const stats = await node.getContainer(container.Id).stats({stream: false});
             const inspection = await node.getContainer(container.Id).inspect()

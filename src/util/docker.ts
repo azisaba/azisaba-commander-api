@@ -1,8 +1,8 @@
 import Docker from 'dockerode'
-import Dockerode from 'dockerode'
 import {config} from './config'
 import {sleep} from "./util";
 import * as dockerHandler from "./docker_handler"
+import fs from "fs";
 
 const debug = require('debug')('azisaba-commander-api:docker')
 
@@ -16,59 +16,29 @@ export const init = async () => {
 
     for (const key in config['docker']) {
         const value = config['docker'][key]
+        const {name, ...data} = value
+
         debug(value)    //  print settings
         if (value['name'] === undefined) {
             debug('name undefined. skip')
             continue
         }
 
-        //  identify connection type
-        const protocol = value['protocol']
-        if (!protocol) {
-            debug('protocol undefined. skip %s', value['name'])
-            continue
+        let formatted = data
+        if (formatted.ca) {
+            formatted.ca = fs.readFileSync(formatted.ca)
+        }
+        if (formatted.cert) {
+            formatted.cert = fs.readFileSync(formatted.cert)
+        }
+        if (formatted.key) {
+            formatted.key = fs.readFileSync(formatted.key)
         }
 
-        switch (protocol) {
-            case 'unix': {  //  socket
-                const socket = value['socket']
-                if (!socket) {
-                    debug('Socket path undefined.')
-                    break
-                }
+        const docker = new Docker(formatted)
 
-                const docker = new Docker({
-                    socketPath: socket
-                })
-
-                //  inspect and insert docker
-                await inspectDockerode(value['name'], docker)
-                break
-            }
-
-            case 'http': {
-                const host = value['host']
-                const port = value['port']
-                if (!host || !port) {
-                    debug('this protocol needs host and port.')
-                    break
-                }
-
-                const docker = new Docker({
-                    host: String(host),
-                    port: Number(port)
-                })
-
-                //  inspect and insert docker
-                await inspectDockerode(value['name'], docker)
-                break
-            }
-
-            default: {
-                debug('this protocol does not support. protocol: %s', protocol)
-                break
-            }
-        }
+        //  inspect and insert docker
+        await inspectDockerode(value['name'], docker)
     }
 
     //  init handler
@@ -81,7 +51,7 @@ export const init = async () => {
  * @param name
  * @param docker
  */
-const inspectDockerode = async (name: string, docker: Dockerode) => {
+const inspectDockerode = async (name: string, docker: Docker) => {
     try {
         await Promise.race([sleep(5000), docker.ping()]).then(result => {
             //  time-out
@@ -100,17 +70,6 @@ const inspectDockerode = async (name: string, docker: Dockerode) => {
     } catch (e) {
         debug('Error: occurred exception during ping pong. name: %s', name)
     }
-}
-
-// getter
-
-/**
- * get Docker instance by name
- * @param name docker name
- * @return Docker|undefined
- */
-export const getDocker = (name: string): Docker | undefined => {
-    return _nameDockerMap.get(name)
 }
 
 /**

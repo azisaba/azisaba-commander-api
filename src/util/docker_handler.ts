@@ -5,7 +5,7 @@ const debug = require('debug')('azisaba-commander-api:docker_handler')
 const _nodes = new Array<Docker>()
 const _container_statuses = new Map<string, ContainerStatus>()
 
-export const init = (nodes: Array<Docker>, interval: number = 5000) => {
+export const init = (nodes: Array<Docker>, interval: number = 10000) => {
     //  containing
     for (const node of nodes) {
         _nodes.push(node)
@@ -23,7 +23,9 @@ const statusHandler = async () => {
             const inspection = await node.getContainer(container.Id).inspect()
 
             //  null check
-            if (!stats || !inspection) continue
+            if (!stats || !inspection) {
+                continue
+            }
 
             //  previous read data
             const oldStatus = _container_statuses.get(container.Id)
@@ -33,30 +35,29 @@ const statusHandler = async () => {
             let total_byte_rx = 0
             let total_packet_tx = 0;
             let total_packet_rx = 0;
-            if (!stats.networks) {
-                continue
-            }
-            for (const [, network] of Object.entries(stats.networks)) {
-                total_byte_tx += network.tx_bytes
-                total_byte_rx += network.rx_bytes
-                total_packet_tx += network.tx_packets
-                total_packet_rx += network.rx_packets
-            }
             //  calculate
             let tx_byte_rate = 0;
             let rx_byte_rate = 0;
             let tx_packet_rate = 0;
             let rx_packet_rate = 0;
-            if (oldStatus) {
-                const oldData = new Date(oldStatus.read_at)
-                const nowDate = new Date(stats.read)
-                const delta_second = (nowDate.getTime() - oldData.getTime()) / 1000;
-                tx_byte_rate = (total_byte_tx - oldStatus.network_stats.tx_total_byte) / delta_second;
-                rx_byte_rate = (total_byte_rx - oldStatus.network_stats.rx_total_byte) / delta_second;
-                tx_packet_rate = (total_packet_tx - oldStatus.network_stats.tx_total_packet) / delta_second;
-                rx_packet_rate = (total_packet_rx - oldStatus.network_stats.rx_total_packet) / delta_second;
-            }
+            if (stats.networks) {
 
+                for (const [, network] of Object.entries(stats.networks)) {
+                    total_byte_tx += network.tx_bytes
+                    total_byte_rx += network.rx_bytes
+                    total_packet_tx += network.tx_packets
+                    total_packet_rx += network.rx_packets
+                }
+                if (oldStatus) {
+                    const oldData = new Date(oldStatus.read_at)
+                    const nowDate = new Date(stats.read)
+                    const delta_second = (nowDate.getTime() - oldData.getTime()) / 1000;
+                    tx_byte_rate = (total_byte_tx - oldStatus.network_stats.tx_total_byte) / delta_second;
+                    rx_byte_rate = (total_byte_rx - oldStatus.network_stats.rx_total_byte) / delta_second;
+                    tx_packet_rate = (total_packet_tx - oldStatus.network_stats.tx_total_packet) / delta_second;
+                    rx_packet_rate = (total_packet_rx - oldStatus.network_stats.rx_total_packet) / delta_second;
+                }
+            }
             //  memory
             const memory_percent = (stats.memory_stats.usage / stats.memory_stats.limit) * 100
 

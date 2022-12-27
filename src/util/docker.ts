@@ -123,7 +123,9 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 
     for (const [name, node] of _nameDockerMap) {
         const nodeInfo = await node.info()
-        const containers = await node.listContainers()
+        const containers = await node.listContainers({
+            all: true
+        })
         for (const container of containers) {
             const containerInspection = await node.getContainer(container.Id).inspect();
             const containerStatus = dockerHandler.getStatus(container.Id)

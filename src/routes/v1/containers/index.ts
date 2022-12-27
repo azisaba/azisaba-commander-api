@@ -18,7 +18,6 @@ router.get('/', authorized(async (req, res, session) => {
     for (const container of containers) {
         if(await checkContainerPermission(session.user_id, container)) {
             filteredContainers.push(container)
-            console.log("Pass ", container.name)
         }
     }
 

@@ -14,21 +14,7 @@ export const router = express.Router();
 router.get('/', authorized(async (req, res, session) => {
 
     const containers = await docker.getAllContainer()
-    let filteredContainers: Container[]
-    if (await userUtil.isAdmin(session.user_id)) {
-        filteredContainers = containers
-    } else {
-        //  get containers that user has its permission
-        filteredContainers = containers.filter(async value => {
-            return await userUtil.hasPermissionContent(
-                session.user_id,
-                {
-                    project: value.project_name,
-                    service: value.service_name
-                }
-            )
-        })
-    }
+    const filteredContainers = containers.filter(async value => await checkContainerPermission(session.user_id, value))
 
     return res.status(200).send({
         containers: filteredContainers

@@ -130,9 +130,10 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 
             const formattedContainer: Container = {
                 id: container.Id,
+                name: containerInspection.Name,
                 //  @ts-ignore
                 docker_id: nodeInfo.ID,
-                name: name,
+                docker_name: name,
                 created_at: containerInspection.Created,
                 project_name: container.Labels['com.docker.compose.project'],
                 service_name: container.Labels['com.docker.compose.service'],
@@ -179,8 +180,9 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
 
     return {
         id: inspection.Id,
+        name: inspection.Name,
         docker_id: nodeId,
-        name: name,
+        docker_name: name,
         created_at: inspection.Created,
         project_name: inspection.Config.Labels['com.docker.compose.project'],
         service_name: inspection.Config.Labels['com.docker.compose.service'],

@@ -6,6 +6,9 @@ import cors from 'cors'
 import logger from 'morgan'
 import * as sql from './util/sql'
 import * as docker from './util/docker'
+import * as cacheablePermission from './util/cache/cacheable_permission'
+import * as cacheableUserPermission from './util/cache/cacheable_user_permission'
+import * as cacheableUsers from './util/cache/cacheable_users'
 import cookieParser from "cookie-parser";
 import {getIP} from "./util/util";
 
@@ -21,6 +24,11 @@ sql.init()
 
         //  init docker loader
         await docker.init()
+
+        //  init cache
+        await cacheablePermission.init()
+        await cacheableUserPermission.init()
+        await cacheableUsers.init()
     })
     // @ts-ignore
     .then(() => process.emit('ready'))

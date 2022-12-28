@@ -12,7 +12,7 @@ import * as crypto from "../../util/crypto"
 import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus, GROUP_USER} from "../../util/constants";
 import {commit} from "../../util/logs"
 import * as process from "process";
-import fetch from "node-fetch";
+import {postNewUserReview} from "../../util/discord";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:register')
 export const router = express.Router();
@@ -66,7 +66,7 @@ router.post('/', protect(async (req, res) => {
         const url = `${process.env.APP_URL}/auth/register?state=${state}`
         debug(`New user requested review. user:${username} url:${url}`)
         await commit(user_id, `New user requested review. user:${username} url:${url}`)
-        await postDiscord(username, url)
+        await postNewUserReview(username, url)
 
         //  done
         res.status(200).send({message: 'ok'})
@@ -111,28 +111,3 @@ router.get('/:id', protect(async (req, res) => {
         state: verified.state
     })
 }))
-
-const postDiscord = async (user: string, url: string): Promise<void> => {
-    if (process.env.DISCORD_WEBHOOK_URL) {
-        await fetch(
-            process.env.DISCORD_WEBHOOK_URL,
-            {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    'username': "AzisabaCommander API",
-                    'embeds': [
-                        {
-                            'title': "新規ユーザー承認リクエスト",
-                            'description': `username: ${user}\nurl: ${url}`,
-                            'url': url,
-                            'color': 5620992
-                        }
-                    ]
-                })
-            }
-        )
-    }
-}

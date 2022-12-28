@@ -1,7 +1,7 @@
 import express from "express"
 import * as userUtil from "../../../util/users"
 import * as docker from "../../../util/docker"
-import {authorized} from "../../../util/util"
+import {authorizedWithTwoFA} from "../../../util/util"
 import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:container:index')
@@ -11,7 +11,7 @@ export const router = express.Router();
 /**
  * Get all container
  */
-router.get('/', authorized(async (req, res, session) => {
+router.get('/', authorizedWithTwoFA(async (req, res, session) => {
 
     const containers = await docker.getAllContainer()
     let filteredContainers: Array<Container> = []
@@ -29,7 +29,7 @@ router.get('/', authorized(async (req, res, session) => {
 /**
  * Get a container
  */
-router.get('/:nodeId/:containerId', authorized(async (req, res, session) => {
+router.get('/:nodeId/:containerId', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -49,7 +49,7 @@ router.get('/:nodeId/:containerId', authorized(async (req, res, session) => {
 /**
  * Start a container
  */
-router.post('/:nodeId/:containerId/start', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/start', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -80,7 +80,7 @@ router.post('/:nodeId/:containerId/start', authorized(async (req, res, session) 
 /**
  * Stop a container
  */
-router.post('/:nodeId/:containerId/stop', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/stop', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -110,7 +110,7 @@ router.post('/:nodeId/:containerId/stop', authorized(async (req, res, session) =
 /**
  * Restart a container
  */
-router.post('/:nodeId/:containerId/restart', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/restart', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -140,7 +140,7 @@ router.post('/:nodeId/:containerId/restart', authorized(async (req, res, session
 /**
  * Get a container logs
  */
-router.get('/:nodeId/:containerId/logs', authorized(async (req, res, session) => {
+router.get('/:nodeId/:containerId/logs', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }

@@ -4,6 +4,7 @@ import * as sql from "./sql";
 import {SessionStatus} from "./constants";
 import * as userUtil from "./users";
 import requestIp from "request-ip";
+import {isRegistered} from "./2fa";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -182,6 +183,44 @@ export const authorizedAdmin = (fn: (req, res, session) => Promise<e.Response<an
         }
         if (!await userUtil.isAdmin(session.user_id)) {
             return res.status(403).send({"error": "forbidden"})
+        }
+
+        await fn(req, res, session)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorizedWithTwoFA = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+
+        if (!await isRegistered(session.user_id)) {
+            return res.status(403).send({error: "you_need_to_register_2fa"})
+        }
+
+        await fn(req, res, session)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorizedAdminWithTwoFA = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+        if (!await userUtil.isAdmin(session.user_id)) {
+            return res.status(403).send({"error": "forbidden"})
+        }
+        if (!await isRegistered(session.user_id)) {
+            return res.status(403).send({error: "you_need_to_register_2fa"})
         }
 
         await fn(req, res, session)

@@ -1,6 +1,6 @@
 import express from "express"
 import * as permissionUtil from "../../../util/permission"
-import {authorizedAdmin} from "../../../util/util"
+import {authorizedAdminWithTwoFA} from "../../../util/util"
 
 const debug = require('debug')('azisaba-commander-api:route:v1:permissions:index')
 
@@ -10,7 +10,7 @@ export const router = express.Router();
  * Get all permission
  * Require: Admin
  */
-router.get('/', authorizedAdmin(async (req, res) => {
+router.get('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  get all permission
     const permissions = await permissionUtil.getAll()
 
@@ -29,7 +29,7 @@ router.get('/', authorizedAdmin(async (req, res) => {
  * Parameter:
  * - id: permission id
  */
-router.get('/:id', authorizedAdmin(async (req, res) => {
+router.get('/:id', authorizedAdminWithTwoFA(async (req, res) => {
     if (!req.params.id) {
         return res.status(400).send({"error": "invalid_param"})
     }
@@ -59,7 +59,7 @@ router.get('/:id', authorizedAdmin(async (req, res) => {
  *     - service: string
  * }
  */
-router.post('/', authorizedAdmin(async (req, res) => {
+router.post('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  param check
     if (!req.body || !req.body.name || !req.body.content) {
         return res.status(400).send({error: 'invalid_param'})
@@ -96,7 +96,7 @@ router.post('/', authorizedAdmin(async (req, res) => {
  *     - service: string
  * }
  */
-router.patch('/', authorizedAdmin(async (req, res) => {
+router.patch('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  param check
     if (!req.body || !req.body.id || !req.body.name || !req.body.content) {
         return res.status(400).send({error: 'invalid_param'})
@@ -130,7 +130,7 @@ router.patch('/', authorizedAdmin(async (req, res) => {
  * - id: number
  * }
  */
-router.delete('/:id', authorizedAdmin(async (req, res) => {
+router.delete('/:id', authorizedAdminWithTwoFA(async (req, res) => {
     //  param check
     if (!req.params || !req.params.id) {
         return res.status(400).send({error: 'invalid_param'})

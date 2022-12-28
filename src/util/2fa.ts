@@ -29,6 +29,9 @@ export const register = async (userId: number): Promise<TwoFAContent | undefined
         secret.base32
     );
 
+    //  update
+    await fetchTwoFAUsers()
+
     //  generate 5 recovery codes(length 10) and save them
     const recoveryCodes = await Promise.all([
         generateSecureRandomString(5), // 1
@@ -129,6 +132,9 @@ export const disable = async (userId: number, code: string): Promise<boolean> =>
         userId
     )
 
+    //  update
+    await fetchTwoFAUsers()
+
     return true
 }
 
@@ -139,8 +145,49 @@ export const disable = async (userId: number, code: string): Promise<boolean> =>
  * @return Boolean
  */
 export const isRegistered = async (userId: number): Promise<boolean> => {
-    return await sql.findOne(
-        "SELECT `id` FROM `users_2fa` WHERE `user_id` = ?",
-        userId
-    ) !== null
+    if (isNaN(userId)) {
+        return false
+    }
+
+    return users.some((value) => value == userId)
+}
+
+
+const users: number[] = []
+
+/**
+ * Initialize cacheable two fa user provider
+ *
+ * @param interval [ms] default: 2 min
+ */
+export const init = async (interval: number = 10*1000): Promise<void> => {
+    await fetchTwoFAUsers()
+
+    //  start handler
+    setInterval(
+        async () => {
+            const res = await fetchTwoFAUsers()
+            console.log("fetch: ",res)
+        },
+        interval
+    )
+}
+
+/**
+ * Fetch all registered users
+ * @return number[]|undefined
+ */
+const fetchTwoFAUsers = async (): Promise<number[] | undefined> => {
+    const res = await sql.findAll('SELECT `user_id` FROM `users_2fa`');
+
+    //  if not find, return null
+    if (!res || typeof res !== 'object') return undefined
+
+    users.splice(0)
+
+    for (const user of res ) {
+        users.push(user.user_id)
+    }
+
+    return users
 }

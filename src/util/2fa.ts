@@ -166,8 +166,7 @@ export const init = async (interval: number = 10*1000): Promise<void> => {
     //  start handler
     setInterval(
         async () => {
-            const res = await fetchTwoFAUsers()
-            console.log("fetch: ",res)
+            await fetchTwoFAUsers()
         },
         interval
     )

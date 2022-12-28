@@ -158,9 +158,9 @@ const users: number[] = []
 /**
  * Initialize cacheable two fa user provider
  *
- * @param interval [ms] default: 2 min
+ * @param interval [ms] default: 5 min
  */
-export const init = async (interval: number = 10*1000): Promise<void> => {
+export const init = async (interval: number = 5*60*1000): Promise<void> => {
     await fetchTwoFAUsers()
 
     //  start handler

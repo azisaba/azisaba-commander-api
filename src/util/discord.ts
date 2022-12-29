@@ -39,9 +39,10 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     'username': 'AzisabaCommander Logger',
                     'embeds': [
                         {
-                            'title': "Log",
-                            'description': `username: ${username}\n${message}`,
-                            'color': 5620992
+                            'title': username,
+                            'description': message,
+                            'color': Math.floor(Math.random() * 16777214) + 1,
+                            'timestamp': new Date().toISOString()
                         }
                     ]
                 })

@@ -36,7 +36,7 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    'username': username,
+                    'username': 'AzisabaCommander Logger' ,
                     'embeds': [
                         {
                             'title': message,
@@ -46,6 +46,8 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     ]
                 })
             }
-        )
+        ).then(async (res) => {
+            console.log(await res.json())
+        })
     }
 }

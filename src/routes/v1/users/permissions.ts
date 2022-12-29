@@ -1,5 +1,5 @@
 import express from "express"
-import {authorizedAdmin} from "../../../util/util";
+import {authorizedAdminWithTwoFA} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import * as permissionUtil from "../../../util/permission";
 import {commit} from "../../../util/logs";
@@ -15,7 +15,7 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', authorizedAdmin(async (req, res) => {
+router.get('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
     //  param check
@@ -46,7 +46,7 @@ router.get('/', authorizedAdmin(async (req, res) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.post('/:permission_id', authorizedAdmin(async (req, res, session) => {
+router.post('/:permission_id', authorizedAdminWithTwoFA(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id
@@ -90,7 +90,7 @@ router.post('/:permission_id', authorizedAdmin(async (req, res, session) => {
  * - id: user id
  * - permission_id: permission id
  */
-router.delete('/:permission_id', authorizedAdmin(async (req, res, session) => {
+router.delete('/:permission_id', authorizedAdminWithTwoFA(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
     const permissionId = req.params.permission_id

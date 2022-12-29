@@ -1,5 +1,5 @@
 import express from "express";
-import {authorizedAdmin} from "../../../util/util";
+import {authorizedAdminWithTwoFA} from "../../../util/util";
 import * as userUtil from "../../../util/users";
 import {commit} from "../../../util/logs";
 
@@ -12,7 +12,7 @@ export const router = express.Router();
  * Parameters:
  * - id: user id
  */
-router.get('/', authorizedAdmin(async (req, res) => {
+router.get('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  @ts-ignore
     const userId = req.userId
 
@@ -38,7 +38,7 @@ router.get('/', authorizedAdmin(async (req, res) => {
  * Body:
  * - group: group name
  */
-router.post('/', authorizedAdmin(async (req, res, session) => {
+router.post('/', authorizedAdminWithTwoFA(async (req, res, session) => {
     //  @ts-ignore
     const userId = req.userId
 

@@ -2,13 +2,16 @@ import * as sql from "./sql";
 import {GROUP_ADMIN} from "./constants";
 import * as permissionTs from "./permission";
 import * as crypto from "./crypto";
+import * as cacheableUserPermission from "./cache/cacheable_user_permission"
+import * as cacheableUsers from './cache/cacheable_users'
 
 /**
  * Get all user profile
  * @return Array<User>
  */
 export const getAllUser = async (): Promise<Array<User>> => {
-    return await sql.findAll('SELECT `id`, `username`, `group` FROM `users`');
+    //  bind
+    return cacheableUsers.getAllUsers()
 }
 
 /**
@@ -16,8 +19,9 @@ export const getAllUser = async (): Promise<Array<User>> => {
  * @param userId
  * @return User
  */
-export const getUser = async (userId: number): Promise<User | null> => {
-    return await sql.findOne('SELECT `id`, `username`, `group` FROM `users` WHERE `id`=?', userId)
+export const getUser = async (userId: number): Promise<User | undefined> => {
+    //  bind
+    return await cacheableUsers.getUser(userId)
 }
 
 /**
@@ -27,7 +31,7 @@ export const getUser = async (userId: number): Promise<User | null> => {
  * @return Boolean
  */
 export const changePassword = async (userId: number, password: string): Promise<void> => {
-    return await sql.execute(
+    await sql.execute(
         "UPDATE `users` SET `password`=? WHERE `id`=?",
         await crypto.hash(password),
         userId
@@ -59,6 +63,10 @@ export const deleteUser = async (userId: number): Promise<void> => {
         "DELETE FROM `users_2fa_recovery` WHERE `id`=?",
         userId
     )
+
+    //  cache update
+    await cacheableUsers.fetchUsers()
+    await cacheableUserPermission.fetchUserPermissions()
 }
 
 /**
@@ -67,8 +75,8 @@ export const deleteUser = async (userId: number): Promise<void> => {
  * @return boolean
  */
 export const existUser = async (userId: number): Promise<boolean> => {
-    if (!userId) return false
-    return await getUser(userId) !== null;
+    //  bind
+    return await cacheableUsers.existUser(userId)
 }
 
 /**
@@ -77,7 +85,9 @@ export const existUser = async (userId: number): Promise<boolean> => {
  *  @return boolean
  */
 export const isAdmin = async (userId: number): Promise<boolean> => {
-    const user = await getUser(userId)
+    //  bind
+    const user = await cacheableUsers.getUser(userId)
+    //  check if user is admin
     return !(!user || user.group !== GROUP_ADMIN)
 }
 
@@ -87,9 +97,8 @@ export const isAdmin = async (userId: number): Promise<boolean> => {
  *  @return Array<number>
  */
 export const getAllPermissionId = async (userId: number): Promise<Array<number> | null> => {
-    const list = await sql.findAll('SELECT `permission_id` FROM `users_permission` WHERE `user_id`=?', userId)
-    if (typeof list !== 'object') return null
-    return list.map(r => r.permission_id)
+    //  bind
+    return await cacheableUserPermission.getAllUserPermissions(userId)
 }
 
 /**
@@ -133,11 +142,7 @@ export const getAllPermissionContents = async (userId: number): Promise<Array<Pe
  * @param permissionId
  */
 export const addPermission = async (userId: number, permissionId: number): Promise<void> => {
-    await sql.execute(
-        "INSERT INTO `users_permission` (`user_id`, `permission_id`) VALUES (?, ?)",
-        userId,
-        permissionId
-    )
+    await cacheableUserPermission.addPermission(userId, permissionId)
 }
 
 /**
@@ -146,11 +151,8 @@ export const addPermission = async (userId: number, permissionId: number): Promi
  * @param permissionId
  */
 export const removePermission = async (userId: number, permissionId: number): Promise<void> => {
-    await sql.execute(
-        "DELETE FROM `users_permission` WHERE `user_id`=? AND `permission_id`=?",
-        userId,
-        permissionId
-    )
+    //  bind
+    await cacheableUserPermission.removePermission(userId, permissionId)
 }
 
 /**
@@ -160,13 +162,9 @@ export const removePermission = async (userId: number, permissionId: number): Pr
  * @param permissionId
  * @return boolean
  */
-export const hasPermission = async (userId: number, permissionId: number) => {
-    if (!userId || !permissionId) return false
-    return await sql.findOne(
-        "SELECT `id` FROM `users_permission` WHERE `user_id`=? AND `permission_id`=?",
-        userId,
-        permissionId
-    ) !== null
+export const hasPermission = async (userId: number, permissionId: number): Promise<boolean> => {
+    //  bind
+    return await cacheableUserPermission.hasPermission(userId, permissionId)
 }
 
 /**
@@ -197,4 +195,7 @@ export const setGroup = async (userId: number, group: string): Promise<void> => 
         group,
         userId
     )
+
+    //  cache update
+    await cacheableUsers.fetchUsers()
 }

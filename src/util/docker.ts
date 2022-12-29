@@ -1,8 +1,8 @@
 import Docker from 'dockerode'
-import Dockerode from 'dockerode'
 import {config} from './config'
 import {sleep} from "./util";
 import * as dockerHandler from "./docker_handler"
+import fs from "fs";
 
 const debug = require('debug')('azisaba-commander-api:docker')
 
@@ -16,59 +16,29 @@ export const init = async () => {
 
     for (const key in config['docker']) {
         const value = config['docker'][key]
+        const {name, ...data} = value
+
         debug(value)    //  print settings
         if (value['name'] === undefined) {
             debug('name undefined. skip')
             continue
         }
 
-        //  identify connection type
-        const protocol = value['protocol']
-        if (!protocol) {
-            debug('protocol undefined. skip %s', value['name'])
-            continue
+        let formatted = data
+        if (formatted.ca) {
+            formatted.ca = fs.readFileSync(formatted.ca)
+        }
+        if (formatted.cert) {
+            formatted.cert = fs.readFileSync(formatted.cert)
+        }
+        if (formatted.key) {
+            formatted.key = fs.readFileSync(formatted.key)
         }
 
-        switch (protocol) {
-            case 'unix': {  //  socket
-                const socket = value['socket']
-                if (!socket) {
-                    debug('Socket path undefined.')
-                    break
-                }
+        const docker = new Docker(formatted)
 
-                const docker = new Docker({
-                    socketPath: socket
-                })
-
-                //  inspect and insert docker
-                await inspectDockerode(value['name'], docker)
-                break
-            }
-
-            case 'http': {
-                const host = value['host']
-                const port = value['port']
-                if (!host || !port) {
-                    debug('this protocol needs host and port.')
-                    break
-                }
-
-                const docker = new Docker({
-                    host: String(host),
-                    port: Number(port)
-                })
-
-                //  inspect and insert docker
-                await inspectDockerode(value['name'], docker)
-                break
-            }
-
-            default: {
-                debug('this protocol does not support. protocol: %s', protocol)
-                break
-            }
-        }
+        //  inspect and insert docker
+        await inspectDockerode(value['name'], docker)
     }
 
     //  init handler
@@ -81,7 +51,7 @@ export const init = async () => {
  * @param name
  * @param docker
  */
-const inspectDockerode = async (name: string, docker: Dockerode) => {
+const inspectDockerode = async (name: string, docker: Docker) => {
     try {
         await Promise.race([sleep(5000), docker.ping()]).then(result => {
             //  time-out
@@ -102,17 +72,6 @@ const inspectDockerode = async (name: string, docker: Dockerode) => {
     }
 }
 
-// getter
-
-/**
- * get Docker instance by name
- * @param name docker name
- * @return Docker|undefined
- */
-export const getDocker = (name: string): Docker | undefined => {
-    return _nameDockerMap.get(name)
-}
-
 /**
  * Get all container
  *
@@ -123,16 +82,19 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 
     for (const [name, node] of _nameDockerMap) {
         const nodeInfo = await node.info()
-        const containers = await node.listContainers()
+        const containers = await node.listContainers({
+            all: true
+        })
         for (const container of containers) {
             const containerInspection = await node.getContainer(container.Id).inspect();
             const containerStatus = dockerHandler.getStatus(container.Id)
 
             const formattedContainer: Container = {
                 id: container.Id,
+                name: containerInspection.Name,
                 //  @ts-ignore
                 docker_id: nodeInfo.ID,
-                name: name,
+                docker_name: name,
                 created_at: containerInspection.Created,
                 project_name: container.Labels['com.docker.compose.project'],
                 service_name: container.Labels['com.docker.compose.service'],
@@ -179,8 +141,9 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
 
     return {
         id: inspection.Id,
+        name: inspection.Name,
         docker_id: nodeId,
-        name: name,
+        docker_name: name,
         created_at: inspection.Created,
         project_name: inspection.Config.Labels['com.docker.compose.project'],
         service_name: inspection.Config.Labels['com.docker.compose.service'],
@@ -197,11 +160,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
  * @return Promise<boolean> if process is succeed, return true
  */
 export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
-
+    const node = await getNode(nodeId)
     if (!node) {
         return false
     }
@@ -228,11 +187,7 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
  * @return Promise<boolean> if process is succeed, return true
  */
 export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
-
+    const node = await getNode(nodeId)
     if (!node) {
         return false
     }
@@ -267,16 +222,13 @@ export const restartContainer = async (nodeId: string, containerId: string): Pro
  *
  * @param nodeId docker node id
  * @param containerId container id
- * @param since UNIX timestamp
  */
-export const getLogs = async (nodeId: string, containerId: string, since: number = 0): Promise<ContainerLogs | undefined> => {
-    const node = Array.from(_nameDockerMap.values()).find(async value => {
-        const info = await value.info()
-        return info.ID === nodeId
-    })
+export const getLogs = async (nodeId: string, containerId: string): Promise<ContainerLogs | undefined> => {
+    const node = await getNode(nodeId)
     if (!node) {
         return undefined
     }
+
     const container = node.getContainer(containerId)
     //  check if container exists
     const inspection = await container.inspect().catch(() => undefined);
@@ -288,7 +240,7 @@ export const getLogs = async (nodeId: string, containerId: string, since: number
         follow: false,
         stdout: true,
         stderr: true,
-        since: +since
+        tail: 1000
     })
 
     if (!Buffer.isBuffer(logs)) {
@@ -299,4 +251,14 @@ export const getLogs = async (nodeId: string, containerId: string, since: number
         read_at: new Date().getDate(),
         logs: logs.toString("utf-8")
     }
+}
+
+const getNode = async (nodeId: string): Promise<Docker | undefined> => {
+    for (const value of Array.from(_nameDockerMap.values())) {
+        const info = await value.info()
+        if (info.ID == nodeId) {
+            return value
+        }
+    }
+    return undefined
 }

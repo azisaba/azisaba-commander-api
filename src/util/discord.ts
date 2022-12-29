@@ -39,9 +39,13 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     'username': 'AzisabaCommander Logger' ,
                     'embeds': [
                         {
-                            'title': message,
+                            'title': "Log",
+                            'description': message,
                             'color': Math.floor(Math.random() * 16777214) + 1,
-                            'timestamp': new Date().toLocaleTimeString(undefined, { timeZone: 'Asia/Tokyo' })
+                            'timestamp': new Date().toLocaleTimeString(undefined, { timeZone: 'Asia/Tokyo' }),
+                            "author": {
+                                "name": username
+                            },
                         }
                     ]
                 })

@@ -41,8 +41,8 @@ export const postLog = async (username: string, message: string): Promise<void> 
                         {
                             'title': "Log",
                             'description': message,
-                            'color': Math.floor(Math.random() * 16777214) + 1,
-                            'timestamp': new Date().toLocaleTimeString(undefined, { timeZone: 'Asia/Tokyo' }),
+                            // 'color': Math.floor(Math.random() * 16777214) + 1,
+                            // 'timestamp': new Date().toLocaleTimeString(undefined, { timeZone: 'Asia/Tokyo' }),
                             "author": {
                                 "name": username
                             },

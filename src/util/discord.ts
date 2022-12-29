@@ -47,8 +47,6 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     ]
                 })
             }
-        ).then(async (res) => {
-            console.log(await res.json())
-        })
+        )
     }
 }

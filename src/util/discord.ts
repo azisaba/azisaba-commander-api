@@ -36,16 +36,12 @@ export const postLog = async (username: string, message: string): Promise<void> 
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    'username': 'AzisabaCommander Logger' ,
+                    'username': 'AzisabaCommander Logger',
                     'embeds': [
                         {
                             'title': "Log",
-                            'description': message,
-                            // 'color': Math.floor(Math.random() * 16777214) + 1,
-                            // 'timestamp': new Date().toLocaleTimeString(undefined, { timeZone: 'Asia/Tokyo' }),
-                            "author": {
-                                "name": username
-                            },
+                            'description': `username: ${username}\n${message}`,
+                            'color': 5620992
                         }
                     ]
                 })

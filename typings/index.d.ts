@@ -68,8 +68,9 @@ declare type PermissionContent = {
  */
 declare type Container = {
     id: string
-    docker_id: string
     name: string
+    docker_id: string
+    docker_name: string
     created_at: string
     project_name: string
     service_name: string

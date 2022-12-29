@@ -25,7 +25,6 @@ router.post('/', authorized(async (req, res, session) => {
     if (!req.body || typeof req.body !== 'object') {
         return res.status(400).send({error: "invalid_params"})
     }
-    console.log(req.body)
 
     const oldPassword = req.body['old']
     const newPassword = req.body['new']
@@ -34,10 +33,7 @@ router.post('/', authorized(async (req, res, session) => {
     if (!oldPassword || oldPassword.length < 7 || !newPassword || newPassword.length < 7) {
         return res.status(400).send({error: "invalid_username_or_password"})
     }
-    const twoFARegistered = await twoFA.isRegistered(session.user_id);
-    if (twoFARegistered && !twoFaCode) {
-        return res.status(400).send({error: "invalid_2fa_code"})
-    }
+
 
     const user = await sql.findOne(
         'SELECT `password` FROM `users` WHERE `id`=? LIMIT 1',
@@ -52,8 +48,11 @@ router.post('/', authorized(async (req, res, session) => {
         return res.status(400).send({error: 'invalid_password_or_2fa_code'})
     }
     //  2fa
-    if (!await twoFA.verify(session.user_id, twoFaCode)) {
-        return res.status(400).send({error: "invalid_password_or_2fa_code"})
+    const twoFARegistered = await twoFA.isRegistered(session.user_id);
+    if (twoFARegistered) {
+        if (!await twoFA.verify(session.user_id, twoFaCode as string)) {
+            return res.status(400).send({error: "invalid_password_or_2fa_code"})
+        }
     }
 
     //  set new password

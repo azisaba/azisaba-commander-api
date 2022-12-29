@@ -2,7 +2,7 @@ import express from "express"
 import {router as permissionsRouter} from "./permissions"
 import {router as groupRouter} from "./group"
 import * as userUtil from "../../../util/users"
-import {authorizedAdmin} from "../../../util/util"
+import {authorizedAdminWithTwoFA} from "../../../util/util"
 import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:users:index')
@@ -18,7 +18,7 @@ export const router = express.Router();
  * Response:
  *
  */
-router.get('/', authorizedAdmin(async (req, res) => {
+router.get('/', authorizedAdminWithTwoFA(async (req, res) => {
     //  get all user
     const users = await userUtil.getAllUser()
     return res.status(200).send(
@@ -36,7 +36,7 @@ router.get('/', authorizedAdmin(async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.get('/:id', authorizedAdmin(async (req, res) => {
+router.get('/:id', authorizedAdminWithTwoFA(async (req, res) => {
     //  param check
     const id = +req.params.id
     if (!id) {
@@ -59,7 +59,7 @@ router.get('/:id', authorizedAdmin(async (req, res) => {
  * Parameters:
  * - id: user id
  */
-router.delete('/:id', authorizedAdmin(async (req, res, session) => {
+router.delete('/:id', authorizedAdminWithTwoFA(async (req, res, session) => {
     //  param check
     const id = +req.params.id
     if (!id) {

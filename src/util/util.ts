@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import * as sql from "./sql";
 import {SessionStatus} from "./constants";
 import * as userUtil from "./users";
+import requestIp from "request-ip";
+import {isRegistered} from "./2fa";
 
 //  session cache
 const sessions: SessionTable = {}
@@ -23,10 +25,20 @@ export const sleep = async (time: number): Promise<void> => {
     await new Promise((res) => setTimeout(res, time));
 }
 
+const convertIPv4 = (ip: string): string | undefined => {
+    if (!ip) return undefined
+    const result =  ip.match( "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$")
+    if(!result) {
+        return undefined
+    }
+
+    return result[0] as string
+}
+
 export const getIP = (req: express.Request) => {
-    const cf = req.headers['cf-connecting-ip']
-    if (cf) return cf as string
-    return req.ip
+    const client = convertIPv4(req.headers['client-side-ip'] as string)
+    if (client) return client
+    return convertIPv4(requestIp.getClientIp(req) as string) ?? req.ip
 }
 
 export const putSession = async (session: Session): Promise<Session> => {
@@ -171,6 +183,44 @@ export const authorizedAdmin = (fn: (req, res, session) => Promise<e.Response<an
         }
         if (!await userUtil.isAdmin(session.user_id)) {
             return res.status(403).send({"error": "forbidden"})
+        }
+
+        await fn(req, res, session)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorizedWithTwoFA = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+
+        if (!await isRegistered(session.user_id)) {
+            return res.status(403).send({error: "you_need_to_register_2fa"})
+        }
+
+        await fn(req, res, session)
+    } catch (e) {
+        next(e)
+    }
+}
+
+//  @ts-ignore
+export const authorizedAdminWithTwoFA = (fn: (req, res, session) => Promise<e.Response<any, Record<string, any>>>) => async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    try {
+        const session = await validateAndGetSession(req)
+        if (!session) {
+            return res.status(401).send({error: "unauthorized"})
+        }
+        if (!await userUtil.isAdmin(session.user_id)) {
+            return res.status(403).send({"error": "forbidden"})
+        }
+        if (!await isRegistered(session.user_id)) {
+            return res.status(403).send({error: "you_need_to_register_2fa"})
         }
 
         await fn(req, res, session)

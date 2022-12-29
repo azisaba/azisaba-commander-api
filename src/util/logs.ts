@@ -1,9 +1,18 @@
 import * as sql from "./sql";
+import * as cacheableUser from "./cache/cacheable_users"
+import {postLog} from "./discord";
 
 export const commit = async (userId: number, message: string): Promise<void> => {
     await sql.execute(
         "INSERT INTO `logs` (`user_id`, `message`) VALUES (?, ?)",
         userId,
+        message
+    )
+
+    //  discord
+    const user = await cacheableUser.getUser(userId)
+    await postLog(
+        !user ? "No username(failed to get)" : user.username,
         message
     )
 }

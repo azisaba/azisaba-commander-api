@@ -1,7 +1,7 @@
 import express from "express"
 import * as userUtil from "../../../util/users"
 import * as docker from "../../../util/docker"
-import {authorized} from "../../../util/util"
+import {authorizedWithTwoFA} from "../../../util/util"
 import {commit} from "../../../util/logs";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:container:index')
@@ -11,23 +11,14 @@ export const router = express.Router();
 /**
  * Get all container
  */
-router.get('/', authorized(async (req, res, session) => {
+router.get('/', authorizedWithTwoFA(async (req, res, session) => {
 
     const containers = await docker.getAllContainer()
-    let filteredContainers: Container[]
-    if (await userUtil.isAdmin(session.user_id)) {
-        filteredContainers = containers
-    } else {
-        //  get containers that user has its permission
-        filteredContainers = containers.filter(async value => {
-            return await userUtil.hasPermissionContent(
-                session.user_id,
-                {
-                    project: value.project_name,
-                    service: value.service_name
-                }
-            )
-        })
+    let filteredContainers: Array<Container> = []
+    for (const container of containers) {
+        if(await checkContainerPermission(session.user_id, container)) {
+            filteredContainers.push(container)
+        }
     }
 
     return res.status(200).send({
@@ -38,7 +29,7 @@ router.get('/', authorized(async (req, res, session) => {
 /**
  * Get a container
  */
-router.get('/:nodeId/:containerId', authorized(async (req, res, session) => {
+router.get('/:nodeId/:containerId', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -58,7 +49,7 @@ router.get('/:nodeId/:containerId', authorized(async (req, res, session) => {
 /**
  * Start a container
  */
-router.post('/:nodeId/:containerId/start', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/start', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -89,7 +80,7 @@ router.post('/:nodeId/:containerId/start', authorized(async (req, res, session) 
 /**
  * Stop a container
  */
-router.post('/:nodeId/:containerId/stop', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/stop', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -119,7 +110,7 @@ router.post('/:nodeId/:containerId/stop', authorized(async (req, res, session) =
 /**
  * Restart a container
  */
-router.post('/:nodeId/:containerId/restart', authorized(async (req, res, session) => {
+router.post('/:nodeId/:containerId/restart', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -149,7 +140,7 @@ router.post('/:nodeId/:containerId/restart', authorized(async (req, res, session
 /**
  * Get a container logs
  */
-router.get('/:nodeId/:containerId/logs', authorized(async (req, res, session) => {
+router.get('/:nodeId/:containerId/logs', authorizedWithTwoFA(async (req, res, session) => {
     if (!req.params || !req.params.nodeId || !req.params.containerId) {
         return res.status(400).send({"error": "invalid_params"})
     }
@@ -163,18 +154,23 @@ router.get('/:nodeId/:containerId/logs', authorized(async (req, res, session) =>
         return res.status(403).send({"error": "forbidden"})
     }
 
-    let time = 0
-    if (!req.body || !req.body.since) {
-        time = +req.body.since
-    }
-
     const logs = await docker.getLogs(
         container.docker_id,
-        container.id,
-        time
+        container.id
     )
 
-    return res.status(200).send(logs)
+    if (!logs)
+    {
+        return res.status(200).send(
+            {
+                message: "Console is not updated yet."
+            }
+        )
+    }
+    
+    return res.status(200).send(
+        logs
+    )
 }))
 
 /**

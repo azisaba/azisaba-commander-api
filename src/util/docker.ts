@@ -64,11 +64,11 @@ const inspectDockerode = async (name: string, docker: Docker) => {
                 //  insert
                 _nameDockerMap.set(name, docker)
             } else {
-                debug('Error: something wrong. name: %s', name)
+                debug('Error: something wrong. name: %s\n%s', name, result)
             }
         })
     } catch (e) {
-        debug('Error: occurred exception during ping pong. name: %s', name)
+        debug('Error: occurred exception during ping pong. name: %s\n%s', name, e)
     }
 }
 

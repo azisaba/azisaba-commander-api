@@ -39,6 +39,9 @@ export const init = async () => {
                 break
         }
     })
+    subscriber.on('error', function(err) {
+        console.log('redis_err ' + String(err));
+    });
 }
 
 export const requestUpdate = async (method: Method) => {

@@ -81,28 +81,31 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
     const list = []
 
     for (const [name, node] of _nameDockerMap) {
-        const nodeInfo = await node.info()
-        const containers = await node.listContainers({
-            all: true
-        })
-        for (const container of containers) {
-            const containerInspection = await node.getContainer(container.Id).inspect();
-            const containerStatus = dockerHandler.getStatus(container.Id)
+        try {
+            const nodeInfo = await node.info()
+            const containers = await node.listContainers({
+                all: true
+            })
+            for (const container of containers) {
+                const containerInspection = await node.getContainer(container.Id).inspect();
+                const containerStatus = dockerHandler.getStatus(container.Id)
 
-            const formattedContainer: Container = {
-                id: container.Id,
-                name: containerInspection.Name,
-                //  @ts-ignore
-                docker_id: nodeInfo.ID,
-                docker_name: name,
-                created_at: containerInspection.Created,
-                project_name: container.Labels['com.docker.compose.project'],
-                service_name: container.Labels['com.docker.compose.service'],
-                // @ts-ignore
-                status: containerStatus
+                const formattedContainer: Container = {
+                    id: container.Id,
+                    name: containerInspection.Name,
+                    //  @ts-ignore
+                    docker_id: nodeInfo.ID,
+                    docker_name: name,
+                    created_at: containerInspection.Created,
+                    project_name: container.Labels['com.docker.compose.project'],
+                    service_name: container.Labels['com.docker.compose.service'],
+                    // @ts-ignore
+                    status: containerStatus
+                }
+
+                list.push(formattedContainer)
             }
-
-            list.push(formattedContainer)
+        } catch (e) {
         }
     }
 
@@ -120,7 +123,11 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
     let name: string | undefined = undefined
     let node: Docker | undefined = undefined
     for (const [key, value] of _nameDockerMap.entries()) {
-        const info = await value.info()
+        const info = await value.info().catch(() => undefined)
+        if (!info) {
+            continue
+        }
+
         if (info.ID === nodeId) {
             name = key
             node = value
@@ -160,23 +167,27 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
  * @return Promise<boolean> if process is succeed, return true
  */
 export const stopContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = await getNode(nodeId)
-    if (!node) {
+    try {
+        const node = await getNode(nodeId)
+        if (!node) {
+            return false
+        }
+
+        const container = node.getContainer(containerId)
+        //  check if container exists
+        const inspection = await container.inspect().catch(() => undefined);
+        if (!inspection) {
+            return false
+        }
+
+        await container.stop()
+            .catch(reason => {
+                return reason.statusCode === 304;
+            })
+        return true
+    } catch (e) {
         return false
     }
-
-    const container = node.getContainer(containerId)
-    //  check if container exists
-    const inspection = await container.inspect().catch(() => undefined);
-    if (!inspection) {
-        return false
-    }
-
-    await container.stop()
-        .catch(reason => {
-            return reason.statusCode === 304;
-        })
-    return true
 }
 
 /**
@@ -187,23 +198,27 @@ export const stopContainer = async (nodeId: string, containerId: string): Promis
  * @return Promise<boolean> if process is succeed, return true
  */
 export const startContainer = async (nodeId: string, containerId: string): Promise<boolean> => {
-    const node = await getNode(nodeId)
-    if (!node) {
+    try {
+        const node = await getNode(nodeId)
+        if (!node) {
+            return false
+        }
+
+        const container = node.getContainer(containerId)
+        //  check if container exists
+        const inspection = await container.inspect().catch(() => undefined);
+        if (!inspection) {
+            return false
+        }
+
+        await container.start()
+            .catch(reason => {
+                return reason.statusCode === 304;
+            })
+        return true
+    } catch (e) {
         return false
     }
-
-    const container = node.getContainer(containerId)
-    //  check if container exists
-    const inspection = await container.inspect().catch(() => undefined);
-    if (!inspection) {
-        return false
-    }
-
-    await container.start()
-        .catch(reason => {
-            return reason.statusCode === 304;
-        })
-    return true
 }
 
 /**
@@ -224,38 +239,46 @@ export const restartContainer = async (nodeId: string, containerId: string): Pro
  * @param containerId container id
  */
 export const getLogs = async (nodeId: string, containerId: string): Promise<ContainerLogs | undefined> => {
-    const node = await getNode(nodeId)
-    if (!node) {
+    try {
+        const node = await getNode(nodeId)
+        if (!node) {
+            return undefined
+        }
+
+        const container = node.getContainer(containerId)
+        //  check if container exists
+        const inspection = await container.inspect().catch(() => undefined);
+        if (!inspection) {
+            return undefined
+        }
+
+        const logs = await container.logs({
+            follow: false,
+            stdout: true,
+            stderr: true,
+            tail: 1000
+        })
+
+        if (!Buffer.isBuffer(logs)) {
+            return undefined
+        }
+
+        return {
+            read_at: new Date().getDate(),
+            logs: logs.toString("utf-8")
+        }
+    } catch (e) {
         return undefined
-    }
-
-    const container = node.getContainer(containerId)
-    //  check if container exists
-    const inspection = await container.inspect().catch(() => undefined);
-    if (!inspection) {
-        return undefined
-    }
-
-    const logs = await container.logs({
-        follow: false,
-        stdout: true,
-        stderr: true,
-        tail: 1000
-    })
-
-    if (!Buffer.isBuffer(logs)) {
-        return undefined
-    }
-
-    return {
-        read_at: new Date().getDate(),
-        logs: logs.toString("utf-8")
     }
 }
 
 const getNode = async (nodeId: string): Promise<Docker | undefined> => {
     for (const value of Array.from(_nameDockerMap.values())) {
-        const info = await value.info()
+        const info = await value.info().catch(() => undefined)
+        if (!info) {
+            continue
+        }
+
         if (info.ID == nodeId) {
             return value
         }

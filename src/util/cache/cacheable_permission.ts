@@ -1,4 +1,5 @@
 import * as sql from "../sql"
+import {requestUpdate} from "../redis_controller";
 
 const permissions: Permission[] = []
 
@@ -8,12 +9,12 @@ const permissions: Permission[] = []
  * @param interval [ms] default: 5 min
  */
 export const init = async (interval: number = 5*60*1000): Promise<void> => {
-    await fetchPermissions()
+    await fetchPermissions(true)
 
     //  start handler
     setInterval(
         async () => {
-            await fetchPermissions()
+            await fetchPermissions(true)
         },
         interval
     )
@@ -23,7 +24,7 @@ export const init = async (interval: number = 5*60*1000): Promise<void> => {
  * Fetch all permissions
  * @return Permission[]|undefined
  */
-export const fetchPermissions = async (): Promise<Permission[] | undefined> => {
+export const fetchPermissions = async (fromRedis: boolean = false): Promise<Permission[] | undefined> => {
     const res = await sql.findAll(
         "SELECT * FROM `permissions`"
     )
@@ -37,6 +38,11 @@ export const fetchPermissions = async (): Promise<Permission[] | undefined> => {
         permission.content = parseContent(permission.content)
 
         permissions.push(permission)
+    }
+
+    if (!fromRedis) {
+        //  redis
+        await requestUpdate("PERMISSIONS")
     }
 
     return permissions

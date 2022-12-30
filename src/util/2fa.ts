@@ -1,6 +1,7 @@
 import * as speakeasy from 'speakeasy'
 import * as sql from "./sql";
 import {generateSecureRandomString} from "./util";
+import {requestUpdate} from "./redis_controller";
 
 /**
  * register 2fa
@@ -161,12 +162,12 @@ const users: number[] = []
  * @param interval [ms] default: 5 min
  */
 export const init = async (interval: number = 5*60*1000): Promise<void> => {
-    await fetchTwoFAUsers()
+    await fetchTwoFAUsers(true)
 
     //  start handler
     setInterval(
         async () => {
-            await fetchTwoFAUsers()
+            await fetchTwoFAUsers(true)
         },
         interval
     )
@@ -176,7 +177,7 @@ export const init = async (interval: number = 5*60*1000): Promise<void> => {
  * Fetch all registered users
  * @return number[]|undefined
  */
-const fetchTwoFAUsers = async (): Promise<number[] | undefined> => {
+export const fetchTwoFAUsers = async (fromRedis: boolean = false): Promise<number[] | undefined> => {
     const res = await sql.findAll('SELECT `user_id` FROM `users_2fa`');
 
     //  if not find, return null
@@ -186,6 +187,11 @@ const fetchTwoFAUsers = async (): Promise<number[] | undefined> => {
 
     for (const user of res ) {
         users.push(user.user_id)
+    }
+
+    if (!fromRedis) {
+        //  redis
+        await requestUpdate("2FA")
     }
 
     return users

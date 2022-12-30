@@ -65,13 +65,19 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 //  API Request rate limit
 let apiRequests: { [ip: string]: number } = {}
-app.use('/api', (req, res, next) => {
+app.use('/', (req, res, next) => {
     const limit = 1000
     const ip = getIP(req)
     if (apiRequests[ip] >= limit) return res.status(429).send({error: 'too_many_requests'})
     apiRequests[ip] = (apiRequests[ip] || 0) + 1
     next()
 })
+
+setInterval(() => {
+    debug("API request limit reset")
+    apiRequests = {}
+}, 60 * 60 * 1000)
+
 
 //  router
 app.use('/', indexV1Router)

@@ -10,6 +10,7 @@ import * as cacheablePermission from './util/cache/cacheable_permission'
 import * as cacheableUserPermission from './util/cache/cacheable_user_permission'
 import * as cacheableUsers from './util/cache/cacheable_users'
 import * as cacheableTwoFA from './util/2fa'
+import * as redisController from './util/redis_controller'
 import cookieParser from "cookie-parser";
 import {getIP} from "./util/util";
 
@@ -31,6 +32,9 @@ sql.init()
         await cacheableUserPermission.init()
         await cacheableUsers.init()
         await cacheableTwoFA.init()
+
+        //  redis
+        await redisController.init()
     })
     // @ts-ignore
     .then(() => process.emit('ready'))

@@ -1,4 +1,5 @@
 import * as sql from "../sql"
+import {requestUpdate} from "../redis_controller";
 
 const users: User[] = []
 
@@ -8,12 +9,12 @@ const users: User[] = []
  * @param interval [ms] default: 2 min
  */
 export const init = async (interval: number = 2*60*1000): Promise<void> => {
-    await fetchUsers()
+    await fetchUsers(true)
 
     //  start handler
     setInterval(
         async () => {
-            await fetchUsers()
+            await fetchUsers(true)
         },
         interval
     )
@@ -23,7 +24,7 @@ export const init = async (interval: number = 2*60*1000): Promise<void> => {
  * Fetch all users
  * @return User[]|undefined
  */
-export const fetchUsers = async (): Promise<User[] | undefined> => {
+export const fetchUsers = async (fromRedis: boolean = false): Promise<User[] | undefined> => {
     const res = await sql.findAll('SELECT `id`, `username`, `group` FROM `users`');
 
     //  if not find, return null
@@ -33,6 +34,11 @@ export const fetchUsers = async (): Promise<User[] | undefined> => {
 
     for (const user of res ) {
         users.push(user)
+    }
+
+    if (!fromRedis) {
+        //  redis
+        await requestUpdate("USERS")
     }
 
     return users

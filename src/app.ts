@@ -10,6 +10,7 @@ import * as cacheablePermission from './util/cache/cacheable_permission'
 import * as cacheableUserPermission from './util/cache/cacheable_user_permission'
 import * as cacheableUsers from './util/cache/cacheable_users'
 import * as cacheableTwoFA from './util/2fa'
+import * as redisController from './util/redis_controller'
 import cookieParser from "cookie-parser";
 import {getIP} from "./util/util";
 
@@ -31,6 +32,9 @@ sql.init()
         await cacheableUserPermission.init()
         await cacheableUsers.init()
         await cacheableTwoFA.init()
+
+        //  redis
+        await redisController.init()
     })
     // @ts-ignore
     .then(() => process.emit('ready'))
@@ -65,13 +69,19 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 //  API Request rate limit
 let apiRequests: { [ip: string]: number } = {}
-app.use('/api', (req, res, next) => {
+app.use('/', (req, res, next) => {
     const limit = 1000
     const ip = getIP(req)
     if (apiRequests[ip] >= limit) return res.status(429).send({error: 'too_many_requests'})
     apiRequests[ip] = (apiRequests[ip] || 0) + 1
     next()
 })
+
+setInterval(() => {
+    debug("API request limit reset")
+    apiRequests = {}
+}, 60 * 60 * 1000)
+
 
 //  router
 app.use('/', indexV1Router)

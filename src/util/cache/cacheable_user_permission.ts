@@ -1,4 +1,5 @@
 import * as sql from "../sql"
+import {requestUpdate} from "../redis_controller";
 
 type UserPermissionMap = {
     [userId: number]: Array<number>
@@ -12,12 +13,12 @@ const userPermissionMap: UserPermissionMap = {}
  * @param interval [ms] default: 5 min
  */
 export const init = async (interval: number = 5*60*1000): Promise<void> => {
-    await fetchUserPermissions()
+    await fetchUserPermissions(true)
 
     //  start handler
     setInterval(
         async () => {
-            await fetchUserPermissions()
+            await fetchUserPermissions(true)
         },
         interval
     )
@@ -28,7 +29,7 @@ export const init = async (interval: number = 5*60*1000): Promise<void> => {
  *
  * @return UserPermissionMap|undefined
  */
-export const fetchUserPermissions = async (): Promise<UserPermissionMap | undefined> => {
+export const fetchUserPermissions = async (fromRedis: boolean = false): Promise<UserPermissionMap | undefined> => {
     const userList = await sql.findAll('SELECT `id` FROM `users`');
     //  if not find, return null
     if (!userList || typeof userList !== 'object') return undefined
@@ -47,6 +48,11 @@ export const fetchUserPermissions = async (): Promise<UserPermissionMap | undefi
         }
 
         userPermissionMap[userId] = permissionList.map(r => r.permission_id)
+    }
+
+    if (!fromRedis) {
+        //  redis
+        await requestUpdate("USER_PERMISSIONS")
     }
 
     return userPermissionMap

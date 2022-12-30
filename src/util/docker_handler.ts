@@ -1,4 +1,5 @@
 import Docker from 'dockerode'
+import {sleep} from "./util";
 
 const debug = require('debug')('azisaba-commander-api:docker_handler')
 
@@ -18,7 +19,11 @@ export const init = (nodes: Array<Docker>, interval: number = 10000) => {
 const statusHandler = async () => {
     for (const node of _nodes) {
         try {
-            const containers = await node.listContainers({all: true})
+            const containers = await Promise.race([sleep(1000), await node.listContainers({all: true})])
+            if (!containers) {
+                continue
+            }
+
             for (const container of containers) {
                 try {
                     const stats = await node.getContainer(container.Id).stats({stream: false});

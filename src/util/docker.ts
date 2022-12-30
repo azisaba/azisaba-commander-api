@@ -82,7 +82,10 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
 
     for (const [name, node] of _nameDockerMap) {
         try {
-            const nodeInfo = await node.info()
+            const nodeInfo = await Promise.race([sleep(1000), node.info()])
+            if (!nodeInfo) {
+                continue
+            }
             const containers = await node.listContainers({
                 all: true
             })
@@ -123,7 +126,7 @@ export const getContainer = async (nodeId: string, containerId: string): Promise
     let name: string | undefined = undefined
     let node: Docker | undefined = undefined
     for (const [key, value] of _nameDockerMap.entries()) {
-        const info = await value.info().catch(() => undefined)
+        const info = await Promise.race([sleep(1000), value.info()])
         if (!info) {
             continue
         }
@@ -274,7 +277,7 @@ export const getLogs = async (nodeId: string, containerId: string): Promise<Cont
 
 const getNode = async (nodeId: string): Promise<Docker | undefined> => {
     for (const value of Array.from(_nameDockerMap.values())) {
-        const info = await value.info().catch(() => undefined)
+        const info = await Promise.race([sleep(1000), value.info()])
         if (!info) {
             continue
         }

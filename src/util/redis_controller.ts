@@ -50,12 +50,17 @@ export const init = async () => {
 }
 
 export const requestUpdate = async (method: Method) => {
-    if (!process.env.REDIS_URL) {
+    if (!process.env.REDIS_HOST) {
         return
     }
 
     const redisClient = createClient({
-        url: process.env.REDIS_URL
+        socket: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT ?? '6379'),
+        },
+        username: process.env.REDIS_USER ?? undefined,
+        password: process.env.REDIS_PASSWORD ?? undefined
     })
 
     const publisher = redisClient.duplicate();

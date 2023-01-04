@@ -19,8 +19,8 @@ export const register = async (userId: number): Promise<TwoFAContent | undefined
     const secret = speakeasy.generateSecret(
         {
             length: 20,
-            name: process.env["2FA_LABEL"] ?? "commander.azisaba.net",
-            issuer: process.env["2FA_ISSUER"] ?? "AzisabaCommander"
+            name: process.env["TWO_FA_LABEL"] ?? "commander.azisaba.net",
+            issuer: process.env["TWO_FA_ISSUER"] ?? "AzisabaCommander"
         }
     )
     //  save secret formatted base64

@@ -11,12 +11,17 @@ type Method = "USERS" | "PERMISSIONS" | "USER_PERMISSIONS" | "2FA"
 
 
 export const init = async () => {
-    if (!process.env.REDIS_URL) {
+    if (!process.env.REDIS_HOST) {
         return
     }
 
     const redisClient = createClient({
-        url: process.env.REDIS_URL
+        socket: {
+            host: process.env.REDIS_HOST,
+            port: Number(process.env.REDIS_PORT ?? '6379'),
+        },
+        username: process.env.REDIS_USER ?? undefined,
+        password: process.env.REDIS_PASS ?? undefined
     })
 
     const subscriber = redisClient.duplicate();

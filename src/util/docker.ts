@@ -38,12 +38,18 @@ export const init = async () => {
             formatted.sshOptions = {
                 privateKey: fs.readFileSync(formatted.privateKey)
             }
+
+            debug(fs.readFileSync(formatted.privateKey).toString())
         }
 
-        const docker = new Docker(formatted)
+        try {
+            const docker = new Docker(formatted)
 
-        //  inspect and insert docker
-        await inspectDockerode(value['name'], docker)
+            //  inspect and insert docker
+            await inspectDockerode(value['name'], docker)
+        } catch (e) {
+            debug("Occur error while initializing dockerode")
+        }
     }
 
     //  init handler

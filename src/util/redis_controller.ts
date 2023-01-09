@@ -11,7 +11,10 @@ type Method = "USERS" | "PERMISSIONS" | "USER_PERMISSIONS" | "2FA"
 
 
 export const init = async () => {
+    debug("initializing Redis client...")
+
     if (!process.env.REDIS_HOST) {
+        debug("Skip this action.")
         return
     }
 
@@ -47,6 +50,8 @@ export const init = async () => {
     subscriber.on('error', function(err) {
         console.log('redis_err ' + String(err));
     });
+
+    debug("Created redis client")
 }
 
 export const requestUpdate = async (method: Method) => {

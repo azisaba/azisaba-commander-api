@@ -34,6 +34,11 @@ export const init = async () => {
         if (formatted.key) {
             formatted.key = fs.readFileSync(formatted.key)
         }
+        if (formatted.privateKey) {
+            formatted.sshOptions = {
+                privateKey: fs.readFileSync(formatted.privateKey)
+            }
+        }
 
         const docker = new Docker(formatted)
 

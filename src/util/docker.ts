@@ -39,7 +39,7 @@ export const init = async () => {
                 privateKey: fs.readFileSync(formatted.privateKey)
             }
 
-            debug(fs.readFileSync(formatted.privateKey))
+            debug(fs.readFileSync(formatted.privateKey).toString())
         }
 
         try {

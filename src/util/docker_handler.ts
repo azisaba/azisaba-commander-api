@@ -19,7 +19,7 @@ export const init = (nodes: Array<Docker>, interval: number = 10000) => {
 const statusHandler = async () => {
     for (const node of _nodes) {
         try {
-            const containers = await Promise.race([sleep(1000), await node.listContainers({all: true})])
+            const containers = await Promise.race([sleep(5000), await node.listContainers({all: true})])
             if (!containers) {
                 continue
             }

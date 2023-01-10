@@ -114,7 +114,7 @@ const fetchContainers = async (): Promise<Container[]> => {
     //  fetch
     for (const [name, node] of _nameDockerMap) {
         try {
-            const nodeInfo = await Promise.race([sleep(1000), node.info()])
+            const nodeInfo = await Promise.race([sleep(5000), node.info()])
             if (!nodeInfo) {
                 continue
             }

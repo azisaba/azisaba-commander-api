@@ -25,19 +25,24 @@ export const init = async () => {
         }
 
         let formatted = data
-        if (formatted.ca) {
-            formatted.ca = fs.readFileSync(formatted.ca)
-        }
-        if (formatted.cert) {
-            formatted.cert = fs.readFileSync(formatted.cert)
-        }
-        if (formatted.key) {
-            formatted.key = fs.readFileSync(formatted.key)
-        }
-        if (formatted.privateKey) {
-            formatted.sshOptions = {
-                privateKey: fs.readFileSync(formatted.privateKey)
+        try {
+            if (formatted.ca) {
+                formatted.ca = fs.readFileSync(formatted.ca)
             }
+            if (formatted.cert) {
+                formatted.cert = fs.readFileSync(formatted.cert)
+            }
+            if (formatted.key) {
+                formatted.key = fs.readFileSync(formatted.key)
+            }
+            if (formatted.privateKey) {
+                formatted.sshOptions = {
+                    privateKey: fs.readFileSync(formatted.privateKey)
+                }
+            }
+        } catch (e: unknown) {
+            debug("Error: not found file. ", e)
+            continue
         }
 
         try {
@@ -45,7 +50,7 @@ export const init = async () => {
 
             //  inspect and insert docker
             await inspectDockerode(value['name'], docker)
-        } catch (e) {
+        } catch (err: unknown) {
             debug("Occur error while initializing dockerode")
         }
     }

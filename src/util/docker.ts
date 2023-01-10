@@ -25,19 +25,24 @@ export const init = async () => {
         }
 
         let formatted = data
-        if (formatted.ca) {
-            formatted.ca = fs.readFileSync(formatted.ca)
-        }
-        if (formatted.cert) {
-            formatted.cert = fs.readFileSync(formatted.cert)
-        }
-        if (formatted.key) {
-            formatted.key = fs.readFileSync(formatted.key)
-        }
-        if (formatted.privateKey) {
-            formatted.sshOptions = {
-                privateKey: fs.readFileSync(formatted.privateKey)
+        try {
+            if (formatted.ca) {
+                formatted.ca = fs.readFileSync(formatted.ca)
             }
+            if (formatted.cert) {
+                formatted.cert = fs.readFileSync(formatted.cert)
+            }
+            if (formatted.key) {
+                formatted.key = fs.readFileSync(formatted.key)
+            }
+            if (formatted.privateKey) {
+                formatted.sshOptions = {
+                    privateKey: fs.readFileSync(formatted.privateKey)
+                }
+            }
+        } catch (e: unknown) {
+            debug("Error: not found file. ", e)
+            continue
         }
 
         try {
@@ -45,13 +50,18 @@ export const init = async () => {
 
             //  inspect and insert docker
             await inspectDockerode(value['name'], docker)
-        } catch (e) {
+        } catch (err: unknown) {
             debug("Occur error while initializing dockerode")
         }
     }
 
     //  init handler
     dockerHandler.init(Array.from(_nameDockerMap.values()))
+    //  init cached containers
+    initCachingContainers()
+        .then(() => {
+            debug("Complete first container load")
+        })
 }
 
 /**
@@ -81,17 +91,30 @@ const inspectDockerode = async (name: string, docker: Docker) => {
     }
 }
 
-/**
- * Get all container
- *
- * @return Promise<Array<Container>>
- */
-export const getAllContainer = async (): Promise<Array<Container>> => {
-    const list = []
+//////////////////////////////
+//  Cache Container
+//////////////////////////////
+const cachedContainers: Container[] = []
 
+const initCachingContainers = async (interval: number = 20*1000) => {
+    await fetchContainers()
+
+    //  start handler
+    setInterval(
+        async () => {
+            await fetchContainers()
+        },
+        interval
+    )
+}
+
+const fetchContainers = async (): Promise<Container[]> => {
+    const list: Container[] = []
+
+    //  fetch
     for (const [name, node] of _nameDockerMap) {
         try {
-            const nodeInfo = await Promise.race([sleep(1000), node.info()])
+            const nodeInfo = await Promise.race([sleep(5000), node.info()])
             if (!nodeInfo) {
                 continue
             }
@@ -121,7 +144,31 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
         }
     }
 
-    return list
+    //  clear cache
+    cachedContainers.splice(0)
+    //  insert
+    list.forEach(value => {
+        cachedContainers.push(value)
+    })
+
+    return cachedContainers
+}
+
+/**
+ * Get all container
+ *
+ * @return Promise<Array<Container>>
+ */
+export const getAllContainer = async (): Promise<Array<Container>> => {
+    return cachedContainers.map(value => {
+        //  container status
+        const status = dockerHandler.getStatus(value.id)
+
+        return {
+            ...value,
+            status: status
+        } as Container
+    })
 }
 
 /**
@@ -132,40 +179,15 @@ export const getAllContainer = async (): Promise<Array<Container>> => {
  * @return Promise<Container | undefined>
  */
 export const getContainer = async (nodeId: string, containerId: string): Promise<Container | undefined> => {
-    let name: string | undefined = undefined
-    let node: Docker | undefined = undefined
-    for (const [key, value] of _nameDockerMap.entries()) {
-        const info = await Promise.race([sleep(1000), value.info()])
-        if (!info) {
-            continue
-        }
+    const container = cachedContainers.find(value => value.docker_id == nodeId && value.id == containerId)
 
-        if (info.ID === nodeId) {
-            name = key
-            node = value
-            break
-        }
-    }
-    if (!name || !node) {
+    if (!container) {
         return undefined
     }
 
-    //  container
-    const container = node.getContainer(containerId)
-    const inspection = await container.inspect().catch(() => undefined);
-    if (!inspection) {
-        return undefined
-    }
-    const status = dockerHandler.getStatus(inspection.Id)
-
+    const status = dockerHandler.getStatus(container.id)
     return {
-        id: inspection.Id,
-        name: inspection.Name,
-        docker_id: nodeId,
-        docker_name: name,
-        created_at: inspection.Created,
-        project_name: inspection.Config.Labels['com.docker.compose.project'],
-        service_name: inspection.Config.Labels['com.docker.compose.service'],
+        ...container,
         //  @ts-ignore
         status: status
     }

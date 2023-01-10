@@ -6,7 +6,7 @@ const debug = require('debug')('azisaba-commander-api:docker_handler')
 const _nodes = new Array<Docker>()
 const _container_statuses = new Map<string, ContainerStatus>()
 
-export const init = (nodes: Array<Docker>, interval: number = 10000) => {
+export const init = (nodes: Array<Docker>, interval: number = 20000) => {
     //  containing
     for (const node of nodes) {
         _nodes.push(node)
@@ -19,7 +19,7 @@ export const init = (nodes: Array<Docker>, interval: number = 10000) => {
 const statusHandler = async () => {
     for (const node of _nodes) {
         try {
-            const containers = await Promise.race([sleep(1000), await node.listContainers({all: true})])
+            const containers = await Promise.race([sleep(5000), await node.listContainers({all: true})])
             if (!containers) {
                 continue
             }

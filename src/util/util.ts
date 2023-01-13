@@ -37,9 +37,15 @@ export const sleep = async (time: number): Promise<void> => {
 
 export const getIP = (req: express.Request) => {
     const client = req.headers['client-side-ip'] as string
-    if (client) return client
+    if (client) {
+        console.log("client-side: ", client)
+        return client
+    }
     const cfIP = req.headers['cf-connecting-ip'] as string
-    if (cfIP) return cfIP
+    if (cfIP) {
+        console.log("cloudflare: ", cfIP)
+        return cfIP
+    }
     return requestIp.getClientIp(req) as string ?? req.ip
 }
 

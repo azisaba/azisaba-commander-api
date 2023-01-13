@@ -25,20 +25,22 @@ export const sleep = async (time: number): Promise<void> => {
     await new Promise((res) => setTimeout(res, time));
 }
 
-const convertIPv4 = (ip: string): string | undefined => {
-    if (!ip) return undefined
-    const result =  ip.match( "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$")
-    if(!result) {
-        return undefined
-    }
-
-    return result[0] as string
-}
+// const convertIPv4 = (ip: string): string | undefined => {
+//     if (!ip) return undefined
+//     const result =  ip.match( "((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$")
+//     if(!result) {
+//         return undefined
+//     }
+//
+//     return result[0] as string
+// }
 
 export const getIP = (req: express.Request) => {
-    const client = convertIPv4(req.headers['client-side-ip'] as string)
+    const client = req.headers['client-side-ip'] as string
     if (client) return client
-    return convertIPv4(requestIp.getClientIp(req) as string) ?? req.ip
+    const cfIP = req.headers['cf-connecting-ip'] as string
+    if (cfIP) return cfIP
+    return requestIp.getClientIp(req) as string ?? req.ip
 }
 
 export const putSession = async (session: Session): Promise<Session> => {

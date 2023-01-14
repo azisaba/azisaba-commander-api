@@ -13,6 +13,7 @@ import {UNDER_REVIEW_TAG, UNDER_REVIEW_SESSION_LENGTH, SessionStatus, GROUP_USER
 import {commit} from "../../util/logs"
 import * as process from "process";
 import {postNewUserReview} from "../../util/discord";
+import {fetchUsers} from "../../util/cache/cacheable_users";
 
 const debug = require('debug')('azisaba-commander-api:route:v1:register')
 export const router = express.Router();
@@ -50,6 +51,9 @@ router.post('/', protect(async (req, res) => {
         UNDER_REVIEW_TAG,
         getIP(req)
     ) as number
+
+    //  async fetch
+    fetchUsers().then(() => {})
 
     //  issue Session
     await Promise.race([sleep(3000), generateSecureRandomString(50)]).then(async state => {
